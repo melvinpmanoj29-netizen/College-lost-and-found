@@ -1,122 +1,68 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import 'bootstrap-icons/font/bootstrap-icons.css'
 import './App.css'
 
+type View = 'home' | 'lost' | 'found' | 'search' | 'dashboard' | 'report' | 'about' | 'details'
+type Item = { name: string; kind: 'Lost' | 'Found'; category: string; location: string; date: string; status: string; icon: string; color: string }
+
+const items: Item[] = [
+  { name: 'Navy blue backpack', kind: 'Lost', category: 'Bags', location: 'Harrison Library', date: 'Sep 02, 2026', status: 'Active', icon: 'bi-backpack2', color: 'blue' },
+  { name: 'AirPods Pro case', kind: 'Found', category: 'Electronics', location: 'Student Union', date: 'Sep 01, 2026', status: 'Awaiting claim', icon: 'bi-earbuds', color: 'cream' },
+  { name: 'Silver water bottle', kind: 'Lost', category: 'Personal', location: 'North Gym', date: 'Aug 30, 2026', status: 'Active', icon: 'bi-cup-straw', color: 'mint' },
+  { name: 'Calculus textbook', kind: 'Found', category: 'Books', location: 'Science Building', date: 'Aug 29, 2026', status: 'Matched', icon: 'bi-book', color: 'red' },
+]
+
+const navItems: { label: string; view: View; icon: string }[] = [
+  { label: 'Home', view: 'home', icon: 'bi-house' },
+  { label: 'Lost items', view: 'lost', icon: 'bi-search' },
+  { label: 'Found items', view: 'found', icon: 'bi-box-seam' },
+  { label: 'About', view: 'about', icon: 'bi-info-circle' },
+]
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [view, setView] = useState<View>('home')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const go = (next: View) => { setView(next); setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <div className="app-shell">
+      <header className="navbar">
+        <button className="brand" onClick={() => go('home')} aria-label="Go to College Lost and Found home"><span className="brand-mark"><i className="bi bi-box-seam" /></span><span>College <strong>Lost & Found</strong></span></button>
+        <nav className={menuOpen ? 'nav-links open' : 'nav-links'} aria-label="Main navigation">{navItems.map((item) => <button className={view === item.view ? 'nav-link active' : 'nav-link'} key={item.view} onClick={() => go(item.view)}><i className={`bi ${item.icon}`} />{item.label}</button>)}</nav>
+        <div className="nav-actions"><button className="icon-button" aria-label="Notifications" onClick={() => go('dashboard')}><i className="bi bi-bell" /><span className="notification-dot" /></button><button className="avatar" aria-label="Open profile" onClick={() => go('dashboard')}>JD</button><button className="button primary small" onClick={() => go('report')}><i className="bi bi-plus-lg" /> Report item</button></div>
+        <button className="menu-button" aria-label="Toggle menu" onClick={() => setMenuOpen(!menuOpen)}><i className={menuOpen ? 'bi bi-x-lg' : 'bi bi-list'} /></button>
+      </header>
+      <main>
+        {view === 'home' && <Home go={go} />}
+        {(view === 'lost' || view === 'found' || view === 'search') && <Directory kind={view} go={go} />}
+        {view === 'dashboard' && <Dashboard go={go} />}
+        {view === 'report' && <ReportForm go={go} />}
+        {view === 'details' && <Details go={go} />}
+        {view === 'about' && <About />}
+      </main>
+      <footer><div className="footer-brand"><span className="brand-mark"><i className="bi bi-box-seam" /></span><div><strong>College Lost & Found</strong><p>Helping campus belongings find their way home.</p></div></div><div className="footer-links"><button onClick={() => go('lost')}>Lost items</button><button onClick={() => go('found')}>Found items</button><button onClick={() => go('about')}>How it works</button><button onClick={() => go('report')}>Report an item</button></div><span className="copyright">© 2026 Campus Services</span></footer>
+    </div>
   )
 }
+
+function Home({ go }: { go: (view: View) => void }) {
+  return <><section className="hero-section page-width"><div className="hero-copy"><span className="eyebrow"><i className="bi bi-stars" /> A better way to reconnect</span><h1>Lost something?<br /><em>Let's help you find it.</em></h1><p>One trusted place for students to report missing belongings, browse found items, and reconnect with what matters.</p><div className="hero-actions"><button className="button primary" onClick={() => go('report')}><i className="bi bi-plus-lg" /> Report lost item</button><button className="button secondary" onClick={() => go('found')}>Browse found items <i className="bi bi-arrow-right" /></button></div><div className="trust-note"><span className="avatar-stack"><b>AM</b><b>KL</b><b>RS</b></span><span>Trusted by <strong>2,400+ students</strong> this semester</span></div></div><div className="hero-visual"><div className="visual-label"><i className="bi bi-check-circle-fill" /> Item reunited</div><div className="campus-card"><div className="campus-image"><div className="sun" /><div className="building b-one" /><div className="building b-two" /><div className="tree t-one" /><div className="tree t-two" /><div className="path" /></div><div className="found-ticket"><span className="item-icon red"><i className="bi bi-book" /></span><div><strong>Calculus textbook</strong><small>Found at Science Building</small></div><i className="bi bi-arrow-up-right" /></div></div><div className="visual-pin"><i className="bi bi-geo-alt-fill" /><span>North campus</span></div></div></section><section className="quick-actions page-width"><div><span className="section-kicker">START HERE</span><h2>What do you need today?</h2></div><div className="action-grid"><Action icon="bi-search" title="Find an item" text="Browse lost and found reports" onClick={() => go('search')} /><Action icon="bi-flag" title="Report lost" text="Tell the campus community" onClick={() => go('report')} /><Action icon="bi-box-seam" title="Report found" text="Help return an item" onClick={() => go('report')} /><Action icon="bi-grid-1x2" title="My dashboard" text="Track your activity" onClick={() => go('dashboard')} /></div></section><section className="section-band"><div className="page-width"><SectionHeading kicker="RECENT ACTIVITY" title="Items making their way home" action="View all items" onClick={() => go('search')} /><div className="item-grid">{items.map((item) => <ItemCard key={item.name} item={item} onClick={() => go('details')} />)}</div></div></section><HowItWorks /><section className="stats-section page-width"><div><span className="section-kicker">CAMPUS AT A GLANCE</span><h2>Small actions make a<br />big difference.</h2></div><div className="stats-grid"><Stat value="1,284" label="Items reported" /><Stat value="846" label="Items reunited" /><Stat value="94%" label="Return rate" /><Stat value="2.4k" label="Active students" /></div></section><section className="cta page-width"><div><span className="eyebrow">Make a difference today</span><h2>That thing you found?<br />It might mean everything to someone.</h2></div><button className="button white" onClick={() => go('report')}>Report an item <i className="bi bi-arrow-up-right" /></button></section></>
+}
+
+function Action({ icon, title, text, onClick }: { icon: string; title: string; text: string; onClick: () => void }) { return <button className="action-card" onClick={onClick}><span className="action-icon"><i className={`bi ${icon}`} /></span><span><strong>{title}</strong><small>{text}</small></span><i className="bi bi-arrow-up-right arrow" /></button> }
+function SectionHeading({ kicker, title, action, onClick }: { kicker: string; title: string; action?: string; onClick?: () => void }) { return <div className="section-heading"><div><span className="section-kicker">{kicker}</span><h2>{title}</h2></div>{action && <button className="text-button" onClick={onClick}>{action} <i className="bi bi-arrow-right" /></button>}</div> }
+function ItemCard({ item, onClick }: { item: Item; onClick: () => void }) { return <article className="item-card"><div className={`item-image ${item.color}`}><i className={`bi ${item.icon}`} /><span className={item.kind === 'Lost' ? 'badge lost' : 'badge found'}>{item.kind}</span></div><div className="item-info"><div className="item-title"><h3>{item.name}</h3><button aria-label={`More options for ${item.name}`}><i className="bi bi-three-dots" /></button></div><p className="meta"><i className="bi bi-tag" />{item.category} <i className="bi bi-geo-alt" />{item.location}</p><div className="card-bottom"><span><i className="bi bi-calendar3" /> {item.date}</span><span className={item.status === 'Matched' ? 'status success' : 'status'}>{item.status}</span></div><button className="details-link" onClick={onClick}>View details <i className="bi bi-arrow-up-right" /></button></div></article> }
+function HowItWorks() { return <section className="how-section page-width"><SectionHeading kicker="HOW IT WORKS" title="From missing to returned" /><div className="steps"><Step number="01" icon="bi-pencil-square" title="Report" text="Share a few details about what is lost or found." /><Step number="02" icon="bi-search" title="Match" text="Browse reports and get notified about possible matches." /><Step number="03" icon="bi-hand-thumbs-up" title="Claim" text="Verify the details and request a safe handoff." /><Step number="04" icon="bi-house-heart" title="Return" text="Reconnect the item with its owner." /></div></section> }
+function Step({ number, icon, title, text }: { number: string; icon: string; title: string; text: string }) { return <div className="step"><span className="step-number">{number}</span><span className="step-icon"><i className={`bi ${icon}`} /></span><h3>{title}</h3><p>{text}</p></div> }
+function Stat({ value, label }: { value: string; label: string }) { return <div className="stat"><strong>{value}</strong><span>{label}</span></div> }
+
+function Directory({ kind, go }: { kind: 'lost' | 'found' | 'search'; go: (view: View) => void }) { const title = kind === 'lost' ? 'Lost items' : kind === 'found' ? 'Found items' : 'Search the campus'; const displayed = kind === 'lost' ? items.filter((item) => item.kind === 'Lost') : kind === 'found' ? items.filter((item) => item.kind === 'Found') : items; return <section className="directory page-width"><div className="directory-head"><div><span className="section-kicker">CAMPUS DIRECTORY</span><h1>{title}</h1><p>{kind === 'search' ? 'Search reports from across campus to find a match.' : `Browse ${kind} reports shared by the campus community.`}</p></div><button className="button primary" onClick={() => go('report')}><i className="bi bi-plus-lg" /> Report item</button></div><div className="search-toolbar"><div className="search-input"><i className="bi bi-search" /><input placeholder="Search by item, location, or category" /><kbd>⌘ K</kbd></div><select aria-label="Filter by category"><option>All categories</option><option>Electronics</option><option>Books</option><option>Personal</option></select><select aria-label="Sort items"><option>Most recent</option><option>Oldest first</option></select></div><div className="results-line"><span><strong>{displayed.length * 12 + 8}</strong> reports</span><button className="filter-button"><i className="bi bi-sliders" /> More filters</button></div><div className="item-grid directory-grid">{displayed.map((item) => <ItemCard key={item.name} item={item} onClick={() => go('details')} />)}</div></section> }
+
+function Dashboard({ go }: { go: (view: View) => void }) { return <section className="dashboard page-width"><div className="dashboard-head"><div><span className="section-kicker">STUDENT DASHBOARD</span><h1>Good morning, Jordan <span>✦</span></h1><p>Here is what is happening with your reports.</p></div><button className="button primary" onClick={() => go('report')}><i className="bi bi-plus-lg" /> New report</button></div><div className="dashboard-stats"><div><span className="mini-icon blue-bg"><i className="bi bi-flag" /></span><strong>2</strong><small>Active lost reports</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon green-bg"><i className="bi bi-box-seam" /></span><strong>1</strong><small>Found reports</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon yellow-bg"><i className="bi bi-stars" /></span><strong>3</strong><small>Possible matches</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon purple-bg"><i className="bi bi-chat-square-text" /></span><strong>1</strong><small>Unread updates</small><i className="bi bi-arrow-up-right" /></div></div><div className="dashboard-columns"><div className="panel"><div className="panel-head"><div><span className="section-kicker">YOUR REPORTS</span><h2>Active reports</h2></div><button className="text-button">View all <i className="bi bi-arrow-right" /></button></div><div className="report-row"><span className="item-icon blue"><i className="bi bi-backpack2" /></span><div><strong>Navy blue backpack</strong><small>Lost · Harrison Library · Sep 02</small></div><span className="status">Active</span></div><div className="report-row"><span className="item-icon mint"><i className="bi bi-cup-straw" /></span><div><strong>Silver water bottle</strong><small>Lost · North Gym · Aug 30</small></div><span className="status">Active</span></div><button className="add-report" onClick={() => go('report')}><i className="bi bi-plus" /> Add another report</button></div><div className="panel"><div className="panel-head"><div><span className="section-kicker">UPDATES</span><h2>Recent activity</h2></div><button className="icon-button" aria-label="More activity"><i className="bi bi-three-dots" /></button></div><div className="activity"><span className="activity-dot green" /><div><strong>New possible match</strong><p>Your backpack may match a found report.</p><small>2 hours ago</small></div></div><div className="activity"><span className="activity-dot blue-dot" /><div><strong>Report submitted</strong><p>Your lost item report is now visible.</p><small>Yesterday</small></div></div><div className="activity"><span className="activity-dot gray" /><div><strong>Welcome to campus</strong><p>Complete your profile to get started.</p><small>Sep 01, 2026</small></div></div></div></div></section> }
+
+function ReportForm({ go }: { go: (view: View) => void }) { return <section className="form-page page-width"><div className="form-intro"><span className="section-kicker">NEW REPORT</span><h1>Help an item find its way home.</h1><p>Share the details you remember. You can always edit your report later.</p><div className="form-tabs"><button className="active"><i className="bi bi-flag" /> I lost an item</button><button><i className="bi bi-box-seam" /> I found an item</button></div></div><form className="report-form" onSubmit={(event) => { event.preventDefault(); go('dashboard') }}><div className="form-section"><h2>Item details</h2><p>Start with the details people will use to recognize it.</p><label>Item name <span>*</span><input placeholder="e.g. Black Hydro Flask" /></label><div className="two-fields"><label>Category <span>*</span><select><option>Select a category</option><option>Electronics</option><option>Books</option><option>Personal items</option></select></label><label>Color <span>*</span><input placeholder="e.g. Navy blue" /></label></div><label>Description <span>*</span><textarea rows={4} placeholder="Add distinguishing details, stickers, marks, or contents..." /></label><label>Photo <small>Optional</small><div className="upload"><i className="bi bi-cloud-arrow-up" /><strong>Drop an image here, or browse</strong><span>PNG, JPG up to 10MB</span></div></label></div><div className="form-section"><h2>When and where?</h2><p>Approximate details are helpful too.</p><div className="two-fields"><label>Date lost <span>*</span><input type="date" /></label><label>Time <small>Optional</small><input type="time" /></label></div><label>Last seen location <span>*</span><select><option>Select a campus location</option><option>Harrison Library</option><option>Student Union</option><option>North Gym</option><option>Science Building</option></select></label></div><div className="form-actions"><button type="button" className="button secondary" onClick={() => go('home')}>Cancel</button><button type="submit" className="button primary">Submit report <i className="bi bi-arrow-right" /></button></div></form></section> }
+
+function Details({ go }: { go: (view: View) => void }) { const item = items[0]; return <section className="details-page page-width"><button className="back-button" onClick={() => go('search')}><i className="bi bi-arrow-left" /> Back to items</button><div className="details-layout"><div className={`detail-image ${item.color}`}><i className={`bi ${item.icon}`} /><span className="badge lost">Lost</span></div><div className="detail-copy"><span className="section-kicker">LOST ITEM · REPORT #1048</span><h1>{item.name}</h1><p className="detail-sub">Reported by Jordan Davis · 2 days ago</p><div className="detail-facts"><span><i className="bi bi-tag" /><b>Category</b>{item.category}</span><span><i className="bi bi-geo-alt" /><b>Last seen</b>{item.location}</span><span><i className="bi bi-calendar3" /><b>Date lost</b>{item.date}</span></div><div className="description"><h2>Description</h2><p>Dark navy backpack with a small university patch on the front pocket. Contains a blue notebook and a silver water bottle. Last seen near the second-floor study area.</p></div><div className="detail-actions"><button className="button primary" onClick={() => go('dashboard')}><i className="bi bi-chat" /> I have seen this</button><button className="button secondary"><i className="bi bi-share" /> Share report</button></div><div className="safety-note"><i className="bi bi-shield-check" /><span><strong>Keep it safe</strong><small>Never share sensitive personal information. Meet in a public campus location.</small></span></div></div></div></section> }
+function About() { return <section className="about-page page-width"><span className="section-kicker">OUR PURPOSE</span><h1>A more connected campus,<br /><em>one return at a time.</em></h1><p className="about-lead">College Lost & Found is a shared campus space designed to make reporting, searching, and returning belongings feel simple.</p><div className="about-grid"><Step number="01" icon="bi-pencil-square" title="Make it visible" text="A clear report gives a missing item its best chance of being recognized." /><Step number="02" icon="bi-people" title="Look out for each other" text="Our campus community is strongest when small acts of care are easy to make." /><Step number="03" icon="bi-shield-check" title="Return with confidence" text="Simple details and safe handoffs help make every reunion feel right." /></div></section> }
 
 export default App
