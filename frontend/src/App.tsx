@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import './App.css'
 import { useAuth } from './context/AuthContext'
@@ -8,8 +8,19 @@ import AdminRoute from './components/AdminRoute'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ProfilePage from './pages/ProfilePage'
-import AdminPage from './pages/AdminPage'
 import ForbiddenPage from './pages/ForbiddenPage'
+
+// Developer 4 (Nourin) module pages
+import SearchPage from './pages/search/SearchPage'
+import NotificationsPage from './pages/notifications/NotificationsPage'
+import MapPage from './pages/map/MapPage'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminDashboardPage from './pages/admin/AdminDashboardPage'
+import AdminLostItemsPage from './pages/admin/AdminLostItemsPage'
+import AdminFoundItemsPage from './pages/admin/AdminFoundItemsPage'
+import AdminClaimsPage from './pages/admin/AdminClaimsPage'
+import AdminReturnHistoryPage from './pages/admin/AdminReturnHistoryPage'
+import { getUnreadNotifications } from './services/notificationService'
 
 type Item = { name: string; kind: 'Lost' | 'Found'; category: string; location: string; date: string; status: string; icon: string; color: string }
 
@@ -22,7 +33,9 @@ const items: Item[] = [
 
 const navItems: { label: string; path: string; icon: string }[] = [
   { label: 'Home', path: '/', icon: 'bi-house' },
-  { label: 'Lost items', path: '/lost', icon: 'bi-search' },
+  { label: 'Search', path: '/search', icon: 'bi-search' },
+  { label: 'Campus map', path: '/map', icon: 'bi-map' },
+  { label: 'Lost items', path: '/lost', icon: 'bi-flag' },
   { label: 'Found items', path: '/found', icon: 'bi-box-seam' },
   { label: 'About', path: '/about', icon: 'bi-info-circle' },
 ]
@@ -40,7 +53,9 @@ function App() {
         {/* Student area - requires authentication */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/search" element={<Directory kind="search" />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/map" element={<MapPage />} />
           <Route path="/lost" element={<Directory kind="lost" />} />
           <Route path="/found" element={<Directory kind="found" />} />
           <Route path="/report" element={<ReportForm />} />
@@ -49,7 +64,15 @@ function App() {
 
           {/* Admin area - requires ADMIN role */}
           <Route element={<AdminRoute />}>
-            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboardPage />} />
+              <Route path="dashboard" element={<AdminDashboardPage />} />
+              <Route path="lost-items" element={<AdminLostItemsPage />} />
+              <Route path="found-items" element={<AdminFoundItemsPage />} />
+              <Route path="claims" element={<AdminClaimsPage />} />
+              <Route path="return-history" element={<AdminReturnHistoryPage />} />
+              <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+            </Route>
           </Route>
         </Route>
 
@@ -62,7 +85,32 @@ function App() {
 function ShellLayout() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    let isMounted = true
+    const fetchUnread = async () => {
+      try {
+        const unread = await getUnreadNotifications()
+        if (isMounted) setUnreadCount(unread.length)
+      } catch {
+        // silently ignore in navbar
+      }
+    }
+
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 30000)
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
+  }, [isAuthenticated, location.pathname])
+
+  const effectiveUnread = isAuthenticated ? unreadCount : 0
 
   const go = (path: string) => { navigate(path); setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }
   const initials = user
@@ -77,11 +125,23 @@ function ShellLayout() {
         <div className="nav-actions">
           {isAuthenticated ? (
             <>
-              <button className="icon-button" aria-label="Notifications" onClick={() => go('/dashboard')}><i className="bi bi-bell" /><span className="notification-dot" /></button>
+              <button
+                className="icon-button"
+                aria-label="Notifications"
+                onClick={() => go('/notifications')}
+                title="Notifications"
+              >
+                <i className="bi bi-bell" />
+                {effectiveUnread > 0 ? (
+                  <span className="nav-unread-badge">{effectiveUnread > 99 ? '99+' : effectiveUnread}</span>
+                ) : (
+                  <span className="notification-dot" />
+                )}
+              </button>
               <button className="avatar" aria-label="Open profile" onClick={() => go('/profile')}>{initials}</button>
               <button className="button primary small" onClick={() => go('/report')}><i className="bi bi-plus-lg" /> Report item</button>
               {isAdmin && (
-                <button className="nav-link admin-link" onClick={() => go('/admin')}><i className="bi bi-speedometer2" /> Admin</button>
+                <button className="nav-link admin-link" onClick={() => go('/admin/dashboard')}><i className="bi bi-speedometer2" /> Admin</button>
               )}
               <button className="icon-button" aria-label="Log out" onClick={logout}><i className="bi bi-box-arrow-right" /></button>
             </>
