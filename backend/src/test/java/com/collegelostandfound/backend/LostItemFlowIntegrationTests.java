@@ -303,6 +303,111 @@ class LostItemFlowIntegrationTests {
                 .andExpect(jsonPath("$.isArchived").value(true));
     }
 
+    @Test
+    void frontendCannotSpoofUserIdOnCreation() throws Exception {
+        mockMvc.perform(post("/api/lost-items")
+                        .header("Authorization", "Bearer " + student1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": 9999,
+                                  "itemName": "Spoofed User Wallet",
+                                  "imageUrl": "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+                                  "description": "Attempting to spoof user id ownership",
+                                  "category": "Wallets",
+                                  "lostDateTime": "2026-09-01T10:00:00",
+                                  "lastSeenLocation": "Library"
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.userId").value(student1.getId()))
+                .andExpect(jsonPath("$.userId").value(not(9999)));
+    }
+
+    @Test
+    void backendControlledStatusCannotBeSpoofedOnCreationOrUpdate() throws Exception {
+        // Attempt spoofing status on creation
+        MvcResult result = mockMvc.perform(post("/api/lost-items")
+                        .header("Authorization", "Bearer " + student1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "status": "RETURNED",
+                                  "itemName": "Spoofed Status Item",
+                                  "description": "Attempting to set RETURNED status on creation",
+                                  "category": "Electronics",
+                                  "lostDateTime": "2026-09-01T10:00:00",
+                                  "lastSeenLocation": "Library"
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("LOST"))
+                .andReturn();
+
+        Integer createdId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+
+        // Attempt spoofing status on update
+        mockMvc.perform(put("/api/lost-items/" + createdId)
+                        .header("Authorization", "Bearer " + student1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "status": "RETURNED",
+                                  "itemName": "Updated Item",
+                                  "description": "Attempting to set RETURNED status on update",
+                                  "category": "Electronics",
+                                  "lostDateTime": "2026-09-01T10:00:00",
+                                  "lastSeenLocation": "Library"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("LOST"));
+    }
+
+    @Test
+    void isArchivedCannotBeArbitrarilyControlledByFrontend() throws Exception {
+        mockMvc.perform(post("/api/lost-items")
+                        .header("Authorization", "Bearer " + student1Token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "isArchived": true,
+                                  "itemName": "Archived Spoof Test",
+                                  "description": "Testing isArchived safety",
+                                  "category": "Keys",
+                                  "lostDateTime": "2026-09-01T10:00:00",
+                                  "lastSeenLocation": "Hostel"
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.isArchived").value(false));
+    }
+
+    @Test
+    void privateInformationNotExposedInResponses() throws Exception {
+        LostItem item = createTestLostItem(student1, "Private Info Check Item", false);
+
+        mockMvc.perform(get("/api/lost-items/" + item.getId())
+                        .header("Authorization", "Bearer " + student2Token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.passwordHash").doesNotExist())
+                .andExpect(jsonPath("$.password").doesNotExist())
+                .andExpect(jsonPath("$.verificationAnswer").doesNotExist())
+                .andExpect(jsonPath("$.user.passwordHash").doesNotExist());
+    }
+
+    @Test
+    void cannotDeleteReturnedLostItem() throws Exception {
+        LostItem item = createTestLostItem(student1, "Returned Item", false);
+        item.setStatus("RETURNED");
+        lostItemRepository.save(item);
+
+        mockMvc.perform(delete("/api/lost-items/" + item.getId())
+                        .header("Authorization", "Bearer " + student1Token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Cannot delete an item that has already been returned"));
+    }
+
     // ---------- helpers ----------
 
     private LostItem createTestLostItem(User owner, String itemName, boolean isUrgent) {
