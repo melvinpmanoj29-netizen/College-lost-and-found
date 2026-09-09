@@ -30,6 +30,7 @@ export default function LostItemDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [notFound, setNotFound] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
   // Delete modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -37,13 +38,13 @@ export default function LostItemDetailsPage() {
   const [actionError, setActionError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!id || isNaN(Number(id))) {
-      setNotFound(true)
-      setLoading(false)
-      return
-    }
-
     const fetchItem = async () => {
+      if (!id || isNaN(Number(id))) {
+        setNotFound(true)
+        setLoading(false)
+        return
+      }
+
       setLoading(true)
       setError(null)
       try {
@@ -161,8 +162,13 @@ export default function LostItemDetailsPage() {
 
       <div className="details-layout">
         <div className="detail-media-container">
-          {item.imageUrl ? (
-            <img src={item.imageUrl} alt={item.itemName} className="detail-large-image" />
+          {item.imageUrl && !imageError ? (
+            <img
+              src={item.imageUrl}
+              alt={item.itemName}
+              className="detail-large-image"
+              onError={() => setImageError(true)}
+            />
           ) : (
             <div className="detail-image-fallback">
               <i className="bi bi-box-seam" />

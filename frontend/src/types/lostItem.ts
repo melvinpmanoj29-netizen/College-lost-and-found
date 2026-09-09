@@ -47,3 +47,8 @@ export interface UpdateLostItemRequest {
   latitude?: number | null
   longitude?: number | null
 }
+
+export interface ImageUploadResponse {
+  imageUrl: string
+}
+
