@@ -11,6 +11,11 @@ import RegisterPage from './pages/RegisterPage'
 import ProfilePage from './pages/ProfilePage'
 import AdminPage from './pages/AdminPage'
 import ForbiddenPage from './pages/ForbiddenPage'
+import LostItemsListPage from './pages/lost-items/LostItemsListPage'
+import ReportLostItemPage from './pages/lost-items/ReportLostItemPage'
+import LostItemDetailsPage from './pages/lost-items/LostItemDetailsPage'
+import EditLostItemPage from './pages/lost-items/EditLostItemPage'
+import MyLostItemsPage from './pages/lost-items/MyLostItemsPage'
 
 // Developer 3 (Sahla) - Found Items, Smart Matching, Claims
 import FoundItemsPage from './pages/found-items/FoundItemsPage'
@@ -54,25 +59,30 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/search" element={<Directory kind="search" />} />
-          <Route path="/lost" element={<Directory kind="lost" />} />
+          {/* Lost Items Routes (Developer 2 - Nived) */}
+          <Route path="/lost" element={<LostItemsListPage />} />
+          <Route path="/lost/:id" element={<LostItemDetailsPage />} />
+          <Route path="/lost/:id/edit" element={<EditLostItemPage />} />
+          <Route path="/my-lost" element={<MyLostItemsPage />} />
+          <Route path="/report" element={<ReportLostItemPage />} />
+          <Route path="/report/lost" element={<ReportLostItemPage />} />
+          <Route path="/report/found" element={<ReportForm />} />
 
-          {/* Found Items Routes (Developer 3) */}
+          {/* Found Items Routes (Developer 3 - Sahla) */}
           <Route path="/found" element={<FoundItemsPage />} />
           <Route path="/found/new" element={<ReportFoundItemPage />} />
           <Route path="/found/:id" element={<FoundItemDetailPage />} />
           <Route path="/found/:id/edit" element={<EditFoundItemPage />} />
 
-          {/* Smart Matching Routes (Developer 3) */}
+          {/* Smart Matching Routes (Developer 3 - Sahla) */}
           <Route path="/matches/found/:foundItemId" element={<ItemMatchesPage type="found" />} />
           <Route path="/matches/lost/:lostItemId" element={<ItemMatchesPage type="lost" />} />
           <Route path="/matches/:id" element={<MatchDetailPage />} />
 
-          {/* Claims Routes (Developer 3) */}
+          {/* Claims Routes (Developer 3 - Sahla) */}
           <Route path="/claims" element={<MyClaimsPage />} />
           <Route path="/claims/new" element={<CreateClaimPage />} />
           <Route path="/claims/:id" element={<ClaimDetailPage />} />
-
-          <Route path="/report" element={<ReportForm />} />
           <Route path="/details" element={<Details />} />
           <Route path="/profile" element={<ProfilePage />} />
 
@@ -152,7 +162,7 @@ function Directory({ kind }: { kind: 'lost' | 'found' | 'search' }) {
 
 function Dashboard() {
   const navigate = useNavigate()
-  return <section className="dashboard page-width"><div className="dashboard-head"><div><span className="section-kicker">STUDENT DASHBOARD</span><h1>Good morning, Jordan <span>✦</span></h1><p>Here is what is happening with your reports.</p></div><button className="button primary" onClick={() => navigate('/report')}><i className="bi bi-plus-lg" /> New report</button></div><div className="dashboard-stats"><div><span className="mini-icon blue-bg"><i className="bi bi-flag" /></span><strong>2</strong><small>Active lost reports</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon green-bg"><i className="bi bi-box-seam" /></span><strong>1</strong><small>Found reports</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon yellow-bg"><i className="bi bi-stars" /></span><strong>3</strong><small>Possible matches</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon purple-bg"><i className="bi bi-chat-square-text" /></span><strong>1</strong><small>Unread updates</small><i className="bi bi-arrow-up-right" /></div></div><div className="dashboard-columns"><div className="panel"><div className="panel-head"><div><span className="section-kicker">YOUR REPORTS</span><h2>Active reports</h2></div><button className="text-button">View all <i className="bi bi-arrow-right" /></button></div><div className="report-row"><span className="item-icon blue"><i className="bi bi-backpack2" /></span><div><strong>Navy blue backpack</strong><small>Lost · Harrison Library · Sep 02</small></div><span className="status">Active</span></div><div className="report-row"><span className="item-icon mint"><i className="bi bi-cup-straw" /></span><div><strong>Silver water bottle</strong><small>Lost · North Gym · Aug 30</small></div><span className="status">Active</span></div><button className="add-report" onClick={() => navigate('/report')}><i className="bi bi-plus" /> Add another report</button></div><div className="panel"><div className="panel-head"><div><span className="section-kicker">UPDATES</span><h2>Recent activity</h2></div><button className="icon-button" aria-label="More activity"><i className="bi bi-three-dots" /></button></div><div className="activity"><span className="activity-dot green" /><div><strong>New possible match</strong><p>Your backpack may match a found report.</p><small>2 hours ago</small></div></div><div className="activity"><span className="activity-dot blue-dot" /><div><strong>Report submitted</strong><p>Your lost item report is now visible.</p><small>Yesterday</small></div></div><div className="activity"><span className="activity-dot gray" /><div><strong>Welcome to campus</strong><p>Complete your profile to get started.</p><small>Sep 01, 2026</small></div></div></div></div></section>
+  return <section className="dashboard page-width"><div className="dashboard-head"><div><span className="section-kicker">STUDENT DASHBOARD</span><h1>Good morning, Jordan <span>✦</span></h1><p>Here is what is happening with your reports.</p></div><button className="button primary" onClick={() => navigate('/report')}><i className="bi bi-plus-lg" /> New report</button></div><div className="dashboard-stats"><div style={{ cursor: 'pointer' }} onClick={() => navigate('/my-lost')}><span className="mini-icon blue-bg"><i className="bi bi-flag" /></span><strong>Lost</strong><small>My lost reports</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon green-bg"><i className="bi bi-box-seam" /></span><strong>1</strong><small>Found reports</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon yellow-bg"><i className="bi bi-stars" /></span><strong>3</strong><small>Possible matches</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon purple-bg"><i className="bi bi-chat-square-text" /></span><strong>1</strong><small>Unread updates</small><i className="bi bi-arrow-up-right" /></div></div><div className="dashboard-columns"><div className="panel"><div className="panel-head"><div><span className="section-kicker">YOUR REPORTS</span><h2>Active reports</h2></div><button className="text-button" onClick={() => navigate('/my-lost')}>View all <i className="bi bi-arrow-right" /></button></div><div className="report-row"><span className="item-icon blue"><i className="bi bi-backpack2" /></span><div><strong>Navy blue backpack</strong><small>Lost · Harrison Library · Sep 02</small></div><span className="status">Active</span></div><div className="report-row"><span className="item-icon mint"><i className="bi bi-cup-straw" /></span><div><strong>Silver water bottle</strong><small>Lost · North Gym · Aug 30</small></div><span className="status">Active</span></div><button className="add-report" onClick={() => navigate('/report')}><i className="bi bi-plus" /> Add another report</button></div><div className="panel"><div className="panel-head"><div><span className="section-kicker">UPDATES</span><h2>Recent activity</h2></div><button className="icon-button" aria-label="More activity"><i className="bi bi-three-dots" /></button></div><div className="activity"><span className="activity-dot green" /><div><strong>New possible match</strong><p>Your backpack may match a found report.</p><small>2 hours ago</small></div></div><div className="activity"><span className="activity-dot blue-dot" /><div><strong>Report submitted</strong><p>Your lost item report is now visible.</p><small>Yesterday</small></div></div><div className="activity"><span className="activity-dot gray" /><div><strong>Welcome to campus</strong><p>Complete your profile to get started.</p><small>Sep 01, 2026</small></div></div></div></div></section>
 }
 
 function ReportForm() {
