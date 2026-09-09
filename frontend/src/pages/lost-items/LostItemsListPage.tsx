@@ -31,7 +31,10 @@ export default function LostItemsListPage() {
   }
 
   useEffect(() => {
-    fetchItems()
+    const load = async () => {
+      await fetchItems()
+    }
+    load()
   }, [])
 
   const categories = useMemo(() => {
@@ -43,7 +46,7 @@ export default function LostItemsListPage() {
   }, [items])
 
   const filteredItems = useMemo(() => {
-    let result = items.filter((item) => {
+    const result = items.filter((item) => {
       const q = searchQuery.toLowerCase().trim()
       const matchesQuery =
         !q ||

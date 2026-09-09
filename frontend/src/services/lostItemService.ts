@@ -1,5 +1,5 @@
 import api from './api'
-import type { CreateLostItemRequest, LostItem, UpdateLostItemRequest } from '../types/lostItem'
+import type { CreateLostItemRequest, ImageUploadResponse, LostItem, UpdateLostItemRequest } from '../types/lostItem'
 
 export async function getAllLostItems(): Promise<LostItem[]> {
   const response = await api.get<LostItem[]>('/lost-items')
@@ -29,3 +29,15 @@ export async function getMyLostItems(): Promise<LostItem[]> {
   const response = await api.get<LostItem[]>('/lost-items/my')
   return response.data
 }
+
+export async function uploadLostItemImage(file: File): Promise<ImageUploadResponse> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const response = await api.post<ImageUploadResponse>('/lost-items/upload-image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+  return response.data
+}
+

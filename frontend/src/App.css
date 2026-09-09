@@ -233,4 +233,259 @@
   .modal-card { padding: 18px; }
 }
 
+/* ================= Cloudinary Image Upload Component ================= */
+.form-field-group {
+  margin-bottom: 20px;
+}
+
+.field-group-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.field-group-label small {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.visually-hidden-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.image-upload-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 28px 20px;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  outline: none;
+}
+
+.image-upload-dropzone:hover,
+.image-upload-dropzone:focus-visible {
+  border-color: var(--blue);
+  background: #eff6ff;
+}
+
+.image-upload-dropzone.dragover {
+  border-color: var(--blue);
+  background: #dbeafe;
+  transform: scale(1.01);
+}
+
+.dropzone-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e0e7ff;
+  color: var(--blue);
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  transition: transform 0.2s;
+}
+
+.image-upload-dropzone:hover .dropzone-icon {
+  transform: translateY(-2px);
+}
+
+.dropzone-title {
+  font-size: 14px;
+  color: var(--ink);
+  margin: 0;
+}
+
+.dropzone-title strong {
+  color: var(--blue);
+}
+
+.dropzone-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+.dropzone-button {
+  margin-top: 4px;
+}
+
+.image-upload-preview-card {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.preview-image-container {
+  position: relative;
+  width: 110px;
+  height: 90px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.preview-image-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.preview-uploading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.72);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 6px;
+  text-align: center;
+}
+
+.preview-meta-and-actions {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.preview-file-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.preview-file-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-file-size {
+  font-size: 11px;
+  color: var(--muted);
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.preview-status-row {
+  display: flex;
+  align-items: center;
+}
+
+.upload-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+
+.upload-status-badge.success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.upload-status-badge.uploading {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.upload-status-badge.error {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.upload-status-badge i.spin {
+  animation: spin 1s linear infinite;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.upload-error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.retry-inline-button {
+  background: transparent;
+  border: 1px solid #b91c1c;
+  color: #b91c1c;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.retry-inline-button:hover {
+  background: #b91c1c;
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .image-upload-preview-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .preview-image-container {
+    width: 100%;
+    height: 160px;
+  }
+}
+
+
 

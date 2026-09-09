@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { LostItem } from '../../types/lostItem'
 
@@ -35,6 +36,7 @@ function getCategoryIcon(category: string): string {
 
 export default function LostItemCard({ item, showOwnerActions, onDelete }: LostItemCardProps) {
   const navigate = useNavigate()
+  const [imageError, setImageError] = useState(false)
 
   const statusClass =
     item.status === 'RETURNED'
@@ -46,8 +48,14 @@ export default function LostItemCard({ item, showOwnerActions, onDelete }: LostI
   return (
     <article className="lost-item-card">
       <div className="lost-card-media" onClick={() => navigate(`/lost/${item.id}`)}>
-        {item.imageUrl ? (
-          <img src={item.imageUrl} alt={item.itemName} className="lost-card-image" loading="lazy" />
+        {item.imageUrl && !imageError ? (
+          <img
+            src={item.imageUrl}
+            alt={item.itemName}
+            className="lost-card-image"
+            loading="lazy"
+            onError={() => setImageError(true)}
+          />
         ) : (
           <div className="lost-card-placeholder">
             <i className={`bi ${getCategoryIcon(item.category)}`} />
