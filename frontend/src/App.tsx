@@ -9,6 +9,11 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ProfilePage from './pages/ProfilePage'
 import ForbiddenPage from './pages/ForbiddenPage'
+import LostItemsListPage from './pages/lost-items/LostItemsListPage'
+import ReportLostItemPage from './pages/lost-items/ReportLostItemPage'
+import LostItemDetailsPage from './pages/lost-items/LostItemDetailsPage'
+import EditLostItemPage from './pages/lost-items/EditLostItemPage'
+import MyLostItemsPage from './pages/lost-items/MyLostItemsPage'
 
 // Developer 4 (Nourin) module pages
 import SearchPage from './pages/search/SearchPage'
@@ -53,12 +58,17 @@ function App() {
         {/* Student area - requires authentication */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/search" element={<SearchPage />} />
+   <Route path="/search" element={<SearchPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/map" element={<MapPage />} />
-          <Route path="/lost" element={<Directory kind="lost" />} />
+          <Route path="/lost" element={<LostItemsListPage />} />
+          <Route path="/lost/:id" element={<LostItemDetailsPage />} />
+          <Route path="/lost/:id/edit" element={<EditLostItemPage />} />
           <Route path="/found" element={<Directory kind="found" />} />
-          <Route path="/report" element={<ReportForm />} />
+          <Route path="/report" element={<ReportLostItemPage />} />
+          <Route path="/report/lost" element={<ReportLostItemPage />} />
+          <Route path="/report/found" element={<ReportForm />} />
+          <Route path="/my-lost" element={<MyLostItemsPage />} />
           <Route path="/details" element={<Details />} />
           <Route path="/profile" element={<ProfilePage />} />
 
@@ -183,7 +193,7 @@ function Directory({ kind }: { kind: 'lost' | 'found' | 'search' }) {
 
 function Dashboard() {
   const navigate = useNavigate()
-  return <section className="dashboard page-width"><div className="dashboard-head"><div><span className="section-kicker">STUDENT DASHBOARD</span><h1>Good morning, Jordan <span>✦</span></h1><p>Here is what is happening with your reports.</p></div><button className="button primary" onClick={() => navigate('/report')}><i className="bi bi-plus-lg" /> New report</button></div><div className="dashboard-stats"><div><span className="mini-icon blue-bg"><i className="bi bi-flag" /></span><strong>2</strong><small>Active lost reports</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon green-bg"><i className="bi bi-box-seam" /></span><strong>1</strong><small>Found reports</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon yellow-bg"><i className="bi bi-stars" /></span><strong>3</strong><small>Possible matches</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon purple-bg"><i className="bi bi-chat-square-text" /></span><strong>1</strong><small>Unread updates</small><i className="bi bi-arrow-up-right" /></div></div><div className="dashboard-columns"><div className="panel"><div className="panel-head"><div><span className="section-kicker">YOUR REPORTS</span><h2>Active reports</h2></div><button className="text-button">View all <i className="bi bi-arrow-right" /></button></div><div className="report-row"><span className="item-icon blue"><i className="bi bi-backpack2" /></span><div><strong>Navy blue backpack</strong><small>Lost · Harrison Library · Sep 02</small></div><span className="status">Active</span></div><div className="report-row"><span className="item-icon mint"><i className="bi bi-cup-straw" /></span><div><strong>Silver water bottle</strong><small>Lost · North Gym · Aug 30</small></div><span className="status">Active</span></div><button className="add-report" onClick={() => navigate('/report')}><i className="bi bi-plus" /> Add another report</button></div><div className="panel"><div className="panel-head"><div><span className="section-kicker">UPDATES</span><h2>Recent activity</h2></div><button className="icon-button" aria-label="More activity"><i className="bi bi-three-dots" /></button></div><div className="activity"><span className="activity-dot green" /><div><strong>New possible match</strong><p>Your backpack may match a found report.</p><small>2 hours ago</small></div></div><div className="activity"><span className="activity-dot blue-dot" /><div><strong>Report submitted</strong><p>Your lost item report is now visible.</p><small>Yesterday</small></div></div><div className="activity"><span className="activity-dot gray" /><div><strong>Welcome to campus</strong><p>Complete your profile to get started.</p><small>Sep 01, 2026</small></div></div></div></div></section>
+  return <section className="dashboard page-width"><div className="dashboard-head"><div><span className="section-kicker">STUDENT DASHBOARD</span><h1>Good morning, Jordan <span>✦</span></h1><p>Here is what is happening with your reports.</p></div><button className="button primary" onClick={() => navigate('/report')}><i className="bi bi-plus-lg" /> New report</button></div><div className="dashboard-stats"><div style={{ cursor: 'pointer' }} onClick={() => navigate('/my-lost')}><span className="mini-icon blue-bg"><i className="bi bi-flag" /></span><strong>Lost</strong><small>My lost reports</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon green-bg"><i className="bi bi-box-seam" /></span><strong>1</strong><small>Found reports</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon yellow-bg"><i className="bi bi-stars" /></span><strong>3</strong><small>Possible matches</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon purple-bg"><i className="bi bi-chat-square-text" /></span><strong>1</strong><small>Unread updates</small><i className="bi bi-arrow-up-right" /></div></div><div className="dashboard-columns"><div className="panel"><div className="panel-head"><div><span className="section-kicker">YOUR REPORTS</span><h2>Active reports</h2></div><button className="text-button" onClick={() => navigate('/my-lost')}>View all <i className="bi bi-arrow-right" /></button></div><div className="report-row"><span className="item-icon blue"><i className="bi bi-backpack2" /></span><div><strong>Navy blue backpack</strong><small>Lost · Harrison Library · Sep 02</small></div><span className="status">Active</span></div><div className="report-row"><span className="item-icon mint"><i className="bi bi-cup-straw" /></span><div><strong>Silver water bottle</strong><small>Lost · North Gym · Aug 30</small></div><span className="status">Active</span></div><button className="add-report" onClick={() => navigate('/report')}><i className="bi bi-plus" /> Add another report</button></div><div className="panel"><div className="panel-head"><div><span className="section-kicker">UPDATES</span><h2>Recent activity</h2></div><button className="icon-button" aria-label="More activity"><i className="bi bi-three-dots" /></button></div><div className="activity"><span className="activity-dot green" /><div><strong>New possible match</strong><p>Your backpack may match a found report.</p><small>2 hours ago</small></div></div><div className="activity"><span className="activity-dot blue-dot" /><div><strong>Report submitted</strong><p>Your lost item report is now visible.</p><small>Yesterday</small></div></div><div className="activity"><span className="activity-dot gray" /><div><strong>Welcome to campus</strong><p>Complete your profile to get started.</p><small>Sep 01, 2026</small></div></div></div></div></section>
 }
 
 function ReportForm() {
@@ -198,4 +208,4 @@ function Details() {
 }
 function About() { return <section className="about-page page-width"><span className="section-kicker">OUR PURPOSE</span><h1>A more connected campus,<br /><em>one return at a time.</em></h1><p className="about-lead">College Lost &amp; Found is a shared campus space designed to make reporting, searching, and returning belongings feel simple.</p><div className="about-grid"><Step number="01" icon="bi-pencil-square" title="Make it visible" text="A clear report gives a missing item its best chance of being recognized." /><Step number="02" icon="bi-people" title="Look out for each other" text="Our campus community is strongest when small acts of care are easy to make." /><Step number="03" icon="bi-shield-check" title="Return with confidence" text="Simple details and safe handoffs help make every reunion feel right." /></div></section> }
 
-export default App
+export default App
