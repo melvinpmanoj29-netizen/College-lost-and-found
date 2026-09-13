@@ -2,13 +2,17 @@ package com.collegelostandfound.backend.controller;
 
 import com.collegelostandfound.backend.dto.request.CreateLostItemRequest;
 import com.collegelostandfound.backend.dto.request.UpdateLostItemRequest;
+import com.collegelostandfound.backend.dto.response.ImageUploadResponse;
 import com.collegelostandfound.backend.dto.response.LostItemResponse;
+import com.collegelostandfound.backend.service.CloudinaryService;
 import com.collegelostandfound.backend.service.LostItemService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,9 +21,11 @@ import java.util.List;
 public class LostItemController {
 
     private final LostItemService lostItemService;
+    private final CloudinaryService cloudinaryService;
 
-    public LostItemController(LostItemService lostItemService) {
+    public LostItemController(LostItemService lostItemService, CloudinaryService cloudinaryService) {
         this.lostItemService = lostItemService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @GetMapping
@@ -54,6 +60,12 @@ public class LostItemController {
     ) {
         LostItemResponse response = lostItemService.updateLostItem(id, request, authentication);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping(value = "/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ImageUploadResponse> uploadImage(@RequestParam("file") MultipartFile file) {
+        String imageUrl = cloudinaryService.uploadImage(file);
+        return ResponseEntity.ok(new ImageUploadResponse(imageUrl));
     }
 
     @DeleteMapping("/{id}")

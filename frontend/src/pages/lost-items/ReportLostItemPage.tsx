@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { createLostItem } from '../../services/lostItemService'
 import { getErrorMessage } from '../../services/api'
 import type { CreateLostItemRequest } from '../../types/lostItem'
+import ImageUploadField from '../../components/lost-items/ImageUploadField'
 
 const STANDARD_CATEGORIES = [
   'Electronics',
@@ -48,7 +49,8 @@ export default function ReportLostItemPage() {
   const [lastSeenLocation, setLastSeenLocation] = useState('')
   const [customLocation, setCustomLocation] = useState('')
   const [description, setDescription] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [imageUploading, setImageUploading] = useState(false)
   const [isUrgent, setIsUrgent] = useState(false)
   const [expiryDate, setExpiryDate] = useState(() => {
     const d = new Date()
@@ -88,6 +90,10 @@ export default function ReportLostItemPage() {
       setError('Please select the date the item was lost.')
       return
     }
+    if (imageUploading) {
+      setError('Please wait for the photo upload to finish before submitting.')
+      return
+    }
 
     const lostDateTimeIso = `${lostDate}T${lostTime ? lostTime + ':00' : '12:00:00'}`
     const expiryDateTimeIso = expiryDate ? `${expiryDate}T23:59:59` : null
@@ -99,7 +105,7 @@ export default function ReportLostItemPage() {
       lastSeenLocation: effectiveLocation,
       description: description.trim(),
       lostDateTime: lostDateTimeIso,
-      imageUrl: imageUrl.trim() || null,
+      imageUrl: imageUrl && imageUrl.trim() ? imageUrl.trim() : null,
       isUrgent,
       expiryDate: expiryDateTimeIso,
     }
@@ -209,18 +215,15 @@ export default function ReportLostItemPage() {
             />
           </label>
 
-          <label>
-            Photo URL <small>(Optional — Cloudinary image URL)</small>
-            <input
-              type="url"
-              placeholder="https://res.cloudinary.com/…"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+          <div className="form-field-group">
+            <label className="field-group-label" htmlFor="lost-item-image-input">
+              Photo <small>(Optional — Upload to Cloudinary)</small>
+            </label>
+            <ImageUploadField
+              onImageUploaded={(url) => setImageUrl(url)}
+              onUploadingChange={(uploading) => setImageUploading(uploading)}
             />
-            <span className="auth-hint">
-              Upload your photo to Cloudinary and paste the link here. Only image URLs are stored.
-            </span>
-          </label>
+          </div>
         </div>
 
         <div className="form-section">
@@ -315,12 +318,21 @@ export default function ReportLostItemPage() {
             type="button"
             className="button secondary"
             onClick={() => navigate('/lost')}
-            disabled={submitting}
+            disabled={submitting || imageUploading}
           >
             Cancel
           </button>
-          <button type="submit" className="button primary" disabled={submitting}>
-            {submitting ? (
+          <button
+            type="submit"
+            className="button primary"
+            disabled={submitting || imageUploading}
+          >
+            {imageUploading ? (
+              <>
+                <span className="loader-spinner light" aria-hidden="true" />
+                Uploading photo…
+              </>
+            ) : submitting ? (
               <>
                 <span className="loader-spinner light" aria-hidden="true" />
                 Submitting report…

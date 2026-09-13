@@ -31,7 +31,10 @@ export default function MyLostItemsPage() {
   }
 
   useEffect(() => {
-    fetchMyItems()
+    const load = async () => {
+      await fetchMyItems()
+    }
+    load()
   }, [])
 
   function handleDeleteClick(id: number) {
