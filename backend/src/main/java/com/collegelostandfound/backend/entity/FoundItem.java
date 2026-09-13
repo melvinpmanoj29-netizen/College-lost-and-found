@@ -5,8 +5,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "lost_items")
-public class LostItem {
+@Table(name = "found_items")
+public class FoundItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,11 +31,11 @@ public class LostItem {
     @Column(name = "color", length = 50)
     private String color;
 
-    @Column(name = "lost_date_time", nullable = false)
-    private LocalDateTime lostDateTime;
+    @Column(name = "found_date_time", nullable = false)
+    private LocalDateTime foundDateTime;
 
-    @Column(name = "last_seen_location", nullable = false, length = 255)
-    private String lastSeenLocation;
+    @Column(name = "found_location", nullable = false, length = 255)
+    private String foundLocation;
 
     @Column(name = "latitude", precision = 10, scale = 7)
     private BigDecimal latitude;
@@ -46,22 +46,13 @@ public class LostItem {
     @Column(name = "status", nullable = false, length = 50)
     private String status;
 
-    @Column(name = "is_urgent", nullable = false)
-    private Boolean isUrgent = false;
-
-    @Column(name = "expiry_date")
-    private LocalDateTime expiryDate;
-
-    @Column(name = "is_archived", nullable = false)
-    private Boolean isArchived = false;
-
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public LostItem() {
+    public FoundItem() {
     }
 
     @PrePersist
@@ -72,6 +63,9 @@ public class LostItem {
         }
         if (this.updatedAt == null) {
             this.updatedAt = now;
+        }
+        if (this.status == null) {
+            this.status = "FOUND";
         }
     }
 
@@ -136,20 +130,20 @@ public class LostItem {
         this.color = color;
     }
 
-    public LocalDateTime getLostDateTime() {
-        return lostDateTime;
+    public LocalDateTime getFoundDateTime() {
+        return foundDateTime;
     }
 
-    public void setLostDateTime(LocalDateTime lostDateTime) {
-        this.lostDateTime = lostDateTime;
+    public void setFoundDateTime(LocalDateTime foundDateTime) {
+        this.foundDateTime = foundDateTime;
     }
 
-    public String getLastSeenLocation() {
-        return lastSeenLocation;
+    public String getFoundLocation() {
+        return foundLocation;
     }
 
-    public void setLastSeenLocation(String lastSeenLocation) {
-        this.lastSeenLocation = lastSeenLocation;
+    public void setFoundLocation(String foundLocation) {
+        this.foundLocation = foundLocation;
     }
 
     public BigDecimal getLatitude() {
@@ -174,30 +168,6 @@ public class LostItem {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public Boolean getIsUrgent() {
-        return isUrgent;
-    }
-
-    public void setIsUrgent(Boolean isUrgent) {
-        this.isUrgent = isUrgent != null ? isUrgent : false;
-    }
-
-    public LocalDateTime getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(LocalDateTime expiryDate) {
-        this.expiryDate = expiryDate;
-    }
-
-    public Boolean getIsArchived() {
-        return isArchived;
-    }
-
-    public void setIsArchived(Boolean isArchived) {
-        this.isArchived = isArchived != null ? isArchived : false;
     }
 
     public LocalDateTime getCreatedAt() {

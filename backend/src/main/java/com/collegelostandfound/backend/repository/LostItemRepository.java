@@ -15,4 +15,6 @@ public interface LostItemRepository extends JpaRepository<LostItem, Long> {
     List<LostItem> findAllByOrderByCreatedAtDesc();
 
     List<LostItem> findByExpiryDateBeforeAndStatusAndIsArchivedFalse(LocalDateTime dateTime, String status);
+
+    List<LostItem> findByStatusNot(String status);
 }
