@@ -1,20 +1,42 @@
-import { useState } from 'react'
-import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import './App.css'
+import './styles/found-matching-claims.css'
 import { useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ProfilePage from './pages/ProfilePage'
-import AdminPage from './pages/AdminPage'
 import ForbiddenPage from './pages/ForbiddenPage'
 import LostItemsListPage from './pages/lost-items/LostItemsListPage'
 import ReportLostItemPage from './pages/lost-items/ReportLostItemPage'
 import LostItemDetailsPage from './pages/lost-items/LostItemDetailsPage'
 import EditLostItemPage from './pages/lost-items/EditLostItemPage'
 import MyLostItemsPage from './pages/lost-items/MyLostItemsPage'
+
+// Developer 3 (Sahla) - Found Items, Smart Matching, Claims
+import FoundItemsPage from './pages/found-items/FoundItemsPage'
+import FoundItemDetailPage from './pages/found-items/FoundItemDetailPage'
+import ReportFoundItemPage from './pages/found-items/ReportFoundItemPage'
+import EditFoundItemPage from './pages/found-items/EditFoundItemPage'
+import ItemMatchesPage from './pages/matches/ItemMatchesPage'
+import MatchDetailPage from './pages/matches/MatchDetailPage'
+import CreateClaimPage from './pages/claims/CreateClaimPage'
+import MyClaimsPage from './pages/claims/MyClaimsPage'
+import ClaimDetailPage from './pages/claims/ClaimDetailPage'
+// Developer 4 (Nourin) module pages
+import SearchPage from './pages/search/SearchPage'
+import NotificationsPage from './pages/notifications/NotificationsPage'
+import MapPage from './pages/map/MapPage'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminDashboardPage from './pages/admin/AdminDashboardPage'
+import AdminLostItemsPage from './pages/admin/AdminLostItemsPage'
+import AdminFoundItemsPage from './pages/admin/AdminFoundItemsPage'
+import AdminClaimsPage from './pages/admin/AdminClaimsPage'
+import AdminReturnHistoryPage from './pages/admin/AdminReturnHistoryPage'
+import { getUnreadNotifications } from './services/notificationService'
 
 type Item = { name: string; kind: 'Lost' | 'Found'; category: string; location: string; date: string; status: string; icon: string; color: string }
 
@@ -27,8 +49,11 @@ const items: Item[] = [
 
 const navItems: { label: string; path: string; icon: string }[] = [
   { label: 'Home', path: '/', icon: 'bi-house' },
-  { label: 'Lost items', path: '/lost', icon: 'bi-search' },
+  { label: 'Search', path: '/search', icon: 'bi-search' },
+  { label: 'Campus map', path: '/map', icon: 'bi-map' },
+  { label: 'Lost items', path: '/lost', icon: 'bi-flag' },
   { label: 'Found items', path: '/found', icon: 'bi-box-seam' },
+  { label: 'Claims', path: '/claims', icon: 'bi-shield-check' },
   { label: 'About', path: '/about', icon: 'bi-info-circle' },
 ]
 
@@ -45,21 +70,48 @@ function App() {
         {/* Student area - requires authentication */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/search" element={<Directory kind="search" />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/map" element={<MapPage />} />
+
+          {/* Lost Items Routes (Developer 2 - Nived) */}
           <Route path="/lost" element={<LostItemsListPage />} />
           <Route path="/lost/:id" element={<LostItemDetailsPage />} />
           <Route path="/lost/:id/edit" element={<EditLostItemPage />} />
-          <Route path="/found" element={<Directory kind="found" />} />
+          <Route path="/my-lost" element={<MyLostItemsPage />} />
           <Route path="/report" element={<ReportLostItemPage />} />
           <Route path="/report/lost" element={<ReportLostItemPage />} />
           <Route path="/report/found" element={<ReportForm />} />
-          <Route path="/my-lost" element={<MyLostItemsPage />} />
+
+          {/* Found Items Routes (Developer 3 - Sahla) */}
+          <Route path="/found" element={<FoundItemsPage />} />
+          <Route path="/found/new" element={<ReportFoundItemPage />} />
+          <Route path="/found/:id" element={<FoundItemDetailPage />} />
+          <Route path="/found/:id/edit" element={<EditFoundItemPage />} />
+
+          {/* Smart Matching Routes (Developer 3 - Sahla) */}
+          <Route path="/matches/found/:foundItemId" element={<ItemMatchesPage type="found" />} />
+          <Route path="/matches/lost/:lostItemId" element={<ItemMatchesPage type="lost" />} />
+          <Route path="/matches/:id" element={<MatchDetailPage />} />
+
+          {/* Claims Routes (Developer 3 - Sahla) */}
+          <Route path="/claims" element={<MyClaimsPage />} />
+          <Route path="/claims/new" element={<CreateClaimPage />} />
+          <Route path="/claims/:id" element={<ClaimDetailPage />} />
           <Route path="/details" element={<Details />} />
           <Route path="/profile" element={<ProfilePage />} />
 
           {/* Admin area - requires ADMIN role */}
           <Route element={<AdminRoute />}>
-            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboardPage />} />
+              <Route path="dashboard" element={<AdminDashboardPage />} />
+              <Route path="lost-items" element={<AdminLostItemsPage />} />
+              <Route path="found-items" element={<AdminFoundItemsPage />} />
+              <Route path="claims" element={<AdminClaimsPage />} />
+              <Route path="return-history" element={<AdminReturnHistoryPage />} />
+              <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+            </Route>
           </Route>
         </Route>
 
@@ -72,7 +124,32 @@ function App() {
 function ShellLayout() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    let isMounted = true
+    const fetchUnread = async () => {
+      try {
+        const unread = await getUnreadNotifications()
+        if (isMounted) setUnreadCount(unread.length)
+      } catch {
+        // silently ignore in navbar
+      }
+    }
+
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 30000)
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
+  }, [isAuthenticated, location.pathname])
+
+  const effectiveUnread = isAuthenticated ? unreadCount : 0
 
   const go = (path: string) => { navigate(path); setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }
   const initials = user
@@ -87,11 +164,23 @@ function ShellLayout() {
         <div className="nav-actions">
           {isAuthenticated ? (
             <>
-              <button className="icon-button" aria-label="Notifications" onClick={() => go('/dashboard')}><i className="bi bi-bell" /><span className="notification-dot" /></button>
+              <button
+                className="icon-button"
+                aria-label="Notifications"
+                onClick={() => go('/notifications')}
+                title="Notifications"
+              >
+                <i className="bi bi-bell" />
+                {effectiveUnread > 0 ? (
+                  <span className="nav-unread-badge">{effectiveUnread > 99 ? '99+' : effectiveUnread}</span>
+                ) : (
+                  <span className="notification-dot" />
+                )}
+              </button>
               <button className="avatar" aria-label="Open profile" onClick={() => go('/profile')}>{initials}</button>
               <button className="button primary small" onClick={() => go('/report')}><i className="bi bi-plus-lg" /> Report item</button>
               {isAdmin && (
-                <button className="nav-link admin-link" onClick={() => go('/admin')}><i className="bi bi-speedometer2" /> Admin</button>
+                <button className="nav-link admin-link" onClick={() => go('/admin/dashboard')}><i className="bi bi-speedometer2" /> Admin</button>
               )}
               <button className="icon-button" aria-label="Log out" onClick={logout}><i className="bi bi-box-arrow-right" /></button>
             </>
@@ -107,14 +196,14 @@ function ShellLayout() {
       <main>
         <Outlet />
       </main>
-      <footer><div className="footer-brand"><span className="brand-mark"><i className="bi bi-box-seam" /></span><div><strong>College Lost &amp; Found</strong><p>Helping campus belongings find their way home.</p></div></div><div className="footer-links"><button onClick={() => go('/lost')}>Lost items</button><button onClick={() => go('/found')}>Found items</button><button onClick={() => go('/about')}>How it works</button><button onClick={() => go('/report')}>Report an item</button></div><span className="copyright">© 2026 Campus Services</span></footer>
+      <footer><div className="footer-brand"><span className="brand-mark"><i className="bi bi-box-seam" /></span><div><strong>College Lost &amp; Found</strong><p>Helping campus belongings find their way home.</p></div></div><div className="footer-links"><button onClick={() => go('/lost')}>Lost items</button><button onClick={() => go('/found')}>Found items</button><button onClick={() => go('/claims')}>Claims</button><button onClick={() => go('/about')}>How it works</button><button onClick={() => go('/report')}>Report an item</button></div><span className="copyright">© 2026 Campus Services</span></footer>
     </div>
   )
 }
 
 function Home() {
   const navigate = useNavigate()
-  return <><section className="hero-section page-width"><div className="hero-copy"><span className="eyebrow"><i className="bi bi-stars" /> A better way to reconnect</span><h1>Lost something?<br /><em>Let's help you find it.</em></h1><p>One trusted place for students to report missing belongings, browse found items, and reconnect with what matters.</p><div className="hero-actions"><button className="button primary" onClick={() => navigate('/report')}><i className="bi bi-plus-lg" /> Report lost item</button><button className="button secondary" onClick={() => navigate('/found')}>Browse found items <i className="bi bi-arrow-right" /></button></div><div className="trust-note"><span className="avatar-stack"><b>AM</b><b>KL</b><b>RS</b></span><span>Trusted by <strong>2,400+ students</strong> this semester</span></div></div><div className="hero-visual"><div className="visual-label"><i className="bi bi-check-circle-fill" /> Item reunited</div><div className="campus-card"><div className="campus-image"><div className="sun" /><div className="building b-one" /><div className="building b-two" /><div className="tree t-one" /><div className="tree t-two" /><div className="path" /></div><div className="found-ticket"><span className="item-icon red"><i className="bi bi-book" /></span><div><strong>Calculus textbook</strong><small>Found at Science Building</small></div><i className="bi bi-arrow-up-right" /></div></div><div className="visual-pin"><i className="bi bi-geo-alt-fill" /><span>North campus</span></div></div></section><section className="quick-actions page-width"><div><span className="section-kicker">START HERE</span><h2>What do you need today?</h2></div><div className="action-grid"><Action icon="bi-search" title="Find an item" text="Browse lost and found reports" onClick={() => navigate('/search')} /><Action icon="bi-flag" title="Report lost" text="Tell the campus community" onClick={() => navigate('/report')} /><Action icon="bi-box-seam" title="Report found" text="Help return an item" onClick={() => navigate('/report')} /><Action icon="bi-grid-1x2" title="My dashboard" text="Track your activity" onClick={() => navigate('/dashboard')} /></div></section><section className="section-band"><div className="page-width"><SectionHeading kicker="RECENT ACTIVITY" title="Items making their way home" action="View all items" onClick={() => navigate('/search')} /><div className="item-grid">{items.map((item) => <ItemCard key={item.name} item={item} onClick={() => navigate('/details')} />)}</div></div></section><HowItWorks /><section className="stats-section page-width"><div><span className="section-kicker">CAMPUS AT A GLANCE</span><h2>Small actions make a<br />big difference.</h2></div><div className="stats-grid"><Stat value="1,284" label="Items reported" /><Stat value="846" label="Items reunited" /><Stat value="94%" label="Return rate" /><Stat value="2.4k" label="Active students" /></div></section><section className="cta page-width"><div><span className="eyebrow">Make a difference today</span><h2>That thing you found?<br />It might mean everything to someone.</h2></div><button className="button white" onClick={() => navigate('/report')}>Report an item <i className="bi bi-arrow-up-right" /></button></section></>
+  return <><section className="hero-section page-width"><div className="hero-copy"><span className="eyebrow"><i className="bi bi-stars" /> A better way to reconnect</span><h1>Lost something?<br /><em>Let's help you find it.</em></h1><p>One trusted place for students to report missing belongings, browse found items, and reconnect with what matters.</p><div className="hero-actions"><button className="button primary" onClick={() => navigate('/report')}><i className="bi bi-plus-lg" /> Report lost item</button><button className="button secondary" onClick={() => navigate('/found')}>Browse found items <i className="bi bi-arrow-right" /></button></div><div className="trust-note"><span className="avatar-stack"><b>AM</b><b>KL</b><b>RS</b></span><span>Trusted by <strong>2,400+ students</strong> this semester</span></div></div><div className="hero-visual"><div className="visual-label"><i className="bi bi-check-circle-fill" /> Item reunited</div><div className="campus-card"><div className="campus-image"><div className="sun" /><div className="building b-one" /><div className="building b-two" /><div className="tree t-one" /><div className="tree t-two" /><div className="path" /></div><div className="found-ticket"><span className="item-icon red"><i className="bi bi-book" /></span><div><strong>Calculus textbook</strong><small>Found at Science Building</small></div><i className="bi bi-arrow-up-right" /></div></div><div className="visual-pin"><i className="bi bi-geo-alt-fill" /><span>North campus</span></div></div></section><section className="quick-actions page-width"><div><span className="section-kicker">START HERE</span><h2>What do you need today?</h2></div><div className="action-grid"><Action icon="bi-search" title="Find an item" text="Browse lost and found reports" onClick={() => navigate('/search')} /><Action icon="bi-flag" title="Report lost" text="Tell the campus community" onClick={() => navigate('/report')} /><Action icon="bi-box-seam" title="Report found" text="Help return an item" onClick={() => navigate('/found/new')} /><Action icon="bi-grid-1x2" title="My dashboard" text="Track your activity" onClick={() => navigate('/dashboard')} /></div></section><section className="section-band"><div className="page-width"><SectionHeading kicker="RECENT ACTIVITY" title="Items making their way home" action="View all items" onClick={() => navigate('/search')} /><div className="item-grid">{items.map((item) => <ItemCard key={item.name} item={item} onClick={() => navigate('/details')} />)}</div></div></section><HowItWorks /><section className="stats-section page-width"><div><span className="section-kicker">CAMPUS AT A GLANCE</span><h2>Small actions make a<br />big difference.</h2></div><div className="stats-grid"><Stat value="1,284" label="Items reported" /><Stat value="846" label="Items reunited" /><Stat value="94%" label="Return rate" /><Stat value="2.4k" label="Active students" /></div></section><section className="cta page-width"><div><span className="eyebrow">Make a difference today</span><h2>That thing you found?<br />It might mean everything to someone.</h2></div><button className="button white" onClick={() => navigate('/report')}>Report an item <i className="bi bi-arrow-up-right" /></button></section></>
 }
 
 function Action({ icon, title, text, onClick }: { icon: string; title: string; text: string; onClick: () => void }) { return <button className="action-card" onClick={onClick}><span className="action-icon"><i className={`bi ${icon}`} /></span><span><strong>{title}</strong><small>{text}</small></span><i className="bi bi-arrow-up-right arrow" /></button> }
@@ -138,7 +227,7 @@ function Dashboard() {
 
 function ReportForm() {
   const navigate = useNavigate()
-  return <section className="form-page page-width"><div className="form-intro"><span className="section-kicker">NEW REPORT</span><h1>Help an item find its way home.</h1><p>Share the details you remember. You can always edit your report later.</p><div className="form-tabs"><button className="active"><i className="bi bi-flag" /> I lost an item</button><button><i className="bi bi-box-seam" /> I found an item</button></div></div><form className="report-form" onSubmit={(event) => { event.preventDefault(); navigate('/dashboard') }}><div className="form-section"><h2>Item details</h2><p>Start with the details people will use to recognize it.</p><label>Item name <span>*</span><input placeholder="e.g. Black Hydro Flask" /></label><div className="two-fields"><label>Category <span>*</span><select><option>Select a category</option><option>Electronics</option><option>Books</option><option>Personal items</option></select></label><label>Color <span>*</span><input placeholder="e.g. Navy blue" /></label></div><label>Description <span>*</span><textarea rows={4} placeholder="Add distinguishing details, stickers, marks, or contents..." /></label><label>Photo <small>Optional</small><div className="upload"><i className="bi bi-cloud-arrow-up" /><strong>Drop an image here, or browse</strong><span>PNG, JPG up to 10MB</span></div></label></div><div className="form-section"><h2>When and where?</h2><p>Approximate details are helpful too.</p><div className="two-fields"><label>Date lost <span>*</span><input type="date" /></label><label>Time <small>Optional</small><input type="time" /></label></div><label>Last seen location <span>*</span><select><option>Select a campus location</option><option>Harrison Library</option><option>Student Union</option><option>North Gym</option><option>Science Building</option></select></label></div><div className="form-actions"><button type="button" className="button secondary" onClick={() => navigate('/')}>Cancel</button><button type="submit" className="button primary">Submit report <i className="bi bi-arrow-right" /></button></div></form></section>
+  return <section className="form-page page-width"><div className="form-intro"><span className="section-kicker">NEW REPORT</span><h1>Help an item find its way home.</h1><p>Share the details you remember. You can always edit your report later.</p><div className="form-tabs"><button className="active"><i className="bi bi-flag" /> I lost an item</button><button type="button" onClick={() => navigate('/found/new')}><i className="bi bi-box-seam" /> I found an item</button></div></div><form className="report-form" onSubmit={(event) => { event.preventDefault(); navigate('/dashboard') }}><div className="form-section"><h2>Item details</h2><p>Start with the details people will use to recognize it.</p><label>Item name <span>*</span><input placeholder="e.g. Black Hydro Flask" /></label><div className="two-fields"><label>Category <span>*</span><select><option>Select a category</option><option>Electronics</option><option>Books</option><option>Personal items</option></select></label><label>Color <span>*</span><input placeholder="e.g. Navy blue" /></label></div><label>Description <span>*</span><textarea rows={4} placeholder="Add distinguishing details, stickers, marks, or contents..." /></label><label>Photo <small>Optional</small><div className="upload"><i className="bi bi-cloud-arrow-up" /><strong>Drop an image here, or browse</strong><span>PNG, JPG up to 10MB</span></div></label></div><div className="form-section"><h2>When and where?</h2><p>Approximate details are helpful too.</p><div className="two-fields"><label>Date lost <span>*</span><input type="date" /></label><label>Time <small>Optional</small><input type="time" /></label></div><label>Last seen location <span>*</span><select><option>Select a campus location</option><option>Harrison Library</option><option>Student Union</option><option>North Gym</option><option>Science Building</option></select></label></div><div className="form-actions"><button type="button" className="button secondary" onClick={() => navigate('/')}>Cancel</button><button type="submit" className="button primary">Submit report <i className="bi bi-arrow-right" /></button></div></form></section>
 }
 
 function Details() {
@@ -148,4 +237,4 @@ function Details() {
 }
 function About() { return <section className="about-page page-width"><span className="section-kicker">OUR PURPOSE</span><h1>A more connected campus,<br /><em>one return at a time.</em></h1><p className="about-lead">College Lost &amp; Found is a shared campus space designed to make reporting, searching, and returning belongings feel simple.</p><div className="about-grid"><Step number="01" icon="bi-pencil-square" title="Make it visible" text="A clear report gives a missing item its best chance of being recognized." /><Step number="02" icon="bi-people" title="Look out for each other" text="Our campus community is strongest when small acts of care are easy to make." /><Step number="03" icon="bi-shield-check" title="Return with confidence" text="Simple details and safe handoffs help make every reunion feel right." /></div></section> }
 
-export default App
+export default App

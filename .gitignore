@@ -1,1 +1,11 @@
+<<<<<<< HEAD
 *.freebuff/
+=======
+*.freebuff
+
+# Environment variables & local secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+>>>>>>> 7195f62be0da718551d27eaa1020120c6b312f61
