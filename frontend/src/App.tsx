@@ -213,12 +213,6 @@ function HowItWorks() { return <section className="how-section page-width"><Sect
 function Step({ number, icon, title, text }: { number: string; icon: string; title: string; text: string }) { return <div className="step"><span className="step-number">{number}</span><span className="step-icon"><i className={`bi ${icon}`} /></span><h3>{title}</h3><p>{text}</p></div> }
 function Stat({ value, label }: { value: string; label: string }) { return <div className="stat"><strong>{value}</strong><span>{label}</span></div> }
 
-function Directory({ kind }: { kind: 'lost' | 'found' | 'search' }) {
-  const navigate = useNavigate()
-  const title = kind === 'lost' ? 'Lost items' : kind === 'found' ? 'Found items' : 'Search the campus'
-  const displayed = kind === 'lost' ? items.filter((item) => item.kind === 'Lost') : kind === 'found' ? items.filter((item) => item.kind === 'Found') : items
-  return <section className="directory page-width"><div className="directory-head"><div><span className="section-kicker">CAMPUS DIRECTORY</span><h1>{title}</h1><p>{kind === 'search' ? 'Search reports from across campus to find a match.' : `Browse ${kind} reports shared by the campus community.`}</p></div><button className="button primary" onClick={() => navigate('/report')}><i className="bi bi-plus-lg" /> Report item</button></div><div className="search-toolbar"><div className="search-input"><i className="bi bi-search" /><input placeholder="Search by item, location, or category" /><kbd>⌘ K</kbd></div><select aria-label="Filter by category"><option>All categories</option><option>Electronics</option><option>Books</option><option>Personal</option></select><select aria-label="Sort items"><option>Most recent</option><option>Oldest first</option></select></div><div className="results-line"><span><strong>{displayed.length * 12 + 8}</strong> reports</span><button className="filter-button"><i className="bi bi-sliders" /> More filters</button></div><div className="item-grid directory-grid">{displayed.map((item) => <ItemCard key={item.name} item={item} onClick={() => navigate('/details')} />)}</div></section>
-}
 
 function Dashboard() {
   const navigate = useNavigate()
