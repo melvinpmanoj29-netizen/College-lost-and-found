@@ -30,7 +30,7 @@ public class LostItemServiceImpl implements LostItemService {
     @Transactional
     public List<LostItemResponse> getAllLostItems() {
         archiveExpiredItems();
-        return lostItemRepository.findAllByOrderByCreatedAtDesc().stream()
+        return lostItemRepository.findByStatusNotInOrderByCreatedAtDesc(List.of("RETURNED", "RESOLVED", "ARCHIVED")).stream()
                 .map(LostItemResponse::from)
                 .toList();
     }

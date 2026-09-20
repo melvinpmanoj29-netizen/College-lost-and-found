@@ -3,6 +3,7 @@ import type {
   AdminClaimReview,
   AdminClaimSummary,
   AdminFoundItem,
+  AdminItemHistoryDetail,
   AdminLostItem,
   DashboardStats,
   ReturnHistoryStats,
@@ -15,6 +16,16 @@ export async function getAdminDashboard(): Promise<DashboardStats> {
 
 export async function getReturnHistory(): Promise<ReturnHistoryStats> {
   const response = await api.get<ReturnHistoryStats>('/admin/return-history')
+  return response.data
+}
+
+export async function getAdminHistory(): Promise<AdminItemHistoryDetail[]> {
+  const response = await api.get<AdminItemHistoryDetail[]>('/admin/history')
+  return response.data
+}
+
+export async function getAdminHistoryDetail(claimId: number): Promise<AdminItemHistoryDetail> {
+  const response = await api.get<AdminItemHistoryDetail>(`/admin/history/${claimId}`)
   return response.data
 }
 

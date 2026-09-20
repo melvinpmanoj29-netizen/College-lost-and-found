@@ -155,13 +155,32 @@ export default function CreateClaimPage() {
             {/* Secret Verification Details */}
             <div className="fmc-field full-width">
               <label htmlFor="verificationAnswer">
-                Private Verification Answer <span className="required">*</span>
+                Private Verification Proof <span className="required">*</span>
               </label>
+              
+              <div style={{
+                background: 'var(--color-primary-soft)',
+                border: '1px solid var(--color-border)',
+                borderRadius: '8px',
+                padding: '12px 14px',
+                marginBottom: '10px'
+              }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-cobalt)', marginBottom: '4px' }}>
+                  <i className="bi bi-shield-check" style={{ marginRight: '6px' }} />
+                  Owner Verification Prompts (Answer any that apply):
+                </div>
+                <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.78rem', color: 'var(--color-text-secondary)' }}>
+                  <li><strong>Electronics:</strong> Lock screen wallpaper description, casing color, brand/model, serial number or distinctive scratches.</li>
+                  <li><strong>Wallets / Bags:</strong> Exact contents (number of cards, specific ID, keychains, contents in zipped pockets).</li>
+                  <li><strong>Books / Notes:</strong> Specific handwritten notes on certain pages, bookmarks, names written inside cover.</li>
+                </ul>
+              </div>
+
               <textarea
                 id="verificationAnswer"
                 className="fmc-textarea"
                 rows={5}
-                placeholder="Describe distinguishing attributes only the true owner would know (e.g. phone lockscreen wallpaper, sticker in pocket, key fob color, specific cards inside wallet, scratch on bottom left)..."
+                placeholder="Describe specific distinguishing details only the true owner would know..."
                 value={verificationAnswer}
                 onChange={(e) => {
                   setVerificationAnswer(e.target.value)
@@ -176,7 +195,7 @@ export default function CreateClaimPage() {
               <div className="d-flex align-items-center gap-1 mt-1 text-muted small">
                 <i className="bi bi-lock-fill text-success" />
                 <span>
-                  Admin-only review field. Never shown to any other student or public campus feeds.
+                  Admin-only confidential review field. Never disclosed to any finder or public feeds.
                 </span>
               </div>
             </div>

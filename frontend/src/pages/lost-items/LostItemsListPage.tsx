@@ -4,6 +4,7 @@ import { getAllLostItems } from '../../services/lostItemService'
 import { getErrorMessage } from '../../services/api'
 import type { LostItem } from '../../types/lostItem'
 import LostItemCard from '../../components/lost-items/LostItemCard'
+import { getActiveCategoryNames } from '../../constants/categories'
 
 export default function LostItemsListPage() {
   const navigate = useNavigate()
@@ -38,7 +39,7 @@ export default function LostItemsListPage() {
   }, [])
 
   const categories = useMemo(() => {
-    const set = new Set<string>()
+    const set = new Set<string>(getActiveCategoryNames())
     items.forEach((item) => {
       if (item.category) set.add(item.category)
     })

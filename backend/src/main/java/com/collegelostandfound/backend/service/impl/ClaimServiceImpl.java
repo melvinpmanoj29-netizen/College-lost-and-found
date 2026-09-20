@@ -47,6 +47,14 @@ public class ClaimServiceImpl implements ClaimService {
         FoundItem foundItem = foundItemRepository.findById(request.getFoundItemId())
             .orElseThrow(() -> new ResourceNotFoundException("Found item not found with id: " + request.getFoundItemId()));
 
+        // Prevent claiming already resolved or archived items
+        if ("RETURNED".equalsIgnoreCase(lostItem.getStatus()) || "RESOLVED".equalsIgnoreCase(lostItem.getStatus()) || "ARCHIVED".equalsIgnoreCase(lostItem.getStatus())) {
+            throw new IllegalStateException("The lost item has already been resolved or archived and cannot be claimed");
+        }
+        if ("RETURNED".equalsIgnoreCase(foundItem.getStatus()) || "RESOLVED".equalsIgnoreCase(foundItem.getStatus())) {
+            throw new IllegalStateException("The found item has already been resolved and returned to its owner");
+        }
+
         // Prevent duplicate claim by same user for same lost-found pair
         if (claimRepository.existsByLostItemIdAndFoundItemIdAndClaimantId(
             lostItem.getId(),

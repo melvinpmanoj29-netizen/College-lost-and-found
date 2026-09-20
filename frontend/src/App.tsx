@@ -4,6 +4,8 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 import './App.css'
 import './styles/found-matching-claims.css'
 import { useAuth } from './context/AuthContext'
+import { useTheme } from './context/ThemeContext'
+import Logo from './components/Logo'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import LoginPage from './pages/LoginPage'
@@ -26,31 +28,38 @@ import MatchDetailPage from './pages/matches/MatchDetailPage'
 import CreateClaimPage from './pages/claims/CreateClaimPage'
 import MyClaimsPage from './pages/claims/MyClaimsPage'
 import ClaimDetailPage from './pages/claims/ClaimDetailPage'
-// Developer 4 (Nourin) module pages
 import SearchPage from './pages/search/SearchPage'
 import NotificationsPage from './pages/notifications/NotificationsPage'
-import MapPage from './pages/map/MapPage'
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'
+import StudentDashboardPage from './pages/dashboard/StudentDashboardPage'
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminLostItemsPage from './pages/admin/AdminLostItemsPage'
 import AdminFoundItemsPage from './pages/admin/AdminFoundItemsPage'
 import AdminClaimsPage from './pages/admin/AdminClaimsPage'
+import AdminConfigurationPage from './pages/admin/AdminConfigurationPage'
 import AdminReturnHistoryPage from './pages/admin/AdminReturnHistoryPage'
 import { getUnreadNotifications } from './services/notificationService'
+import { getAllLostItems } from './services/lostItemService'
+import { foundItemService } from './services/foundItemService'
+import type { LostItem } from './types/lostItem'
+import type { FoundItem } from './types/foundItem'
 
-type Item = { name: string; kind: 'Lost' | 'Found'; category: string; location: string; date: string; status: string; icon: string; color: string }
-
-const items: Item[] = [
-  { name: 'Navy blue backpack', kind: 'Lost', category: 'Bags', location: 'Harrison Library', date: 'Sep 02, 2026', status: 'Active', icon: 'bi-backpack2', color: 'blue' },
-  { name: 'AirPods Pro case', kind: 'Found', category: 'Electronics', location: 'Student Union', date: 'Sep 01, 2026', status: 'Awaiting claim', icon: 'bi-earbuds', color: 'cream' },
-  { name: 'Silver water bottle', kind: 'Lost', category: 'Personal', location: 'North Gym', date: 'Aug 30, 2026', status: 'Active', icon: 'bi-cup-straw', color: 'mint' },
-  { name: 'Calculus textbook', kind: 'Found', category: 'Books', location: 'Science Building', date: 'Aug 29, 2026', status: 'Matched', icon: 'bi-book', color: 'red' },
-]
+interface UnifiedRecentItem {
+  id: number
+  name: string
+  kind: 'Lost' | 'Found'
+  category: string
+  location: string
+  date: string
+  status: string
+  imageUrl: string | null
+  color: string | null
+}
 
 const navItems: { label: string; path: string; icon: string }[] = [
   { label: 'Home', path: '/', icon: 'bi-house' },
   { label: 'Search', path: '/search', icon: 'bi-search' },
-  { label: 'Campus map', path: '/map', icon: 'bi-map' },
   { label: 'Lost items', path: '/lost', icon: 'bi-flag' },
   { label: 'Found items', path: '/found', icon: 'bi-box-seam' },
   { label: 'Claims', path: '/claims', icon: 'bi-shield-check' },
@@ -65,14 +74,14 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/forbidden" element={<ForbiddenPage />} />
 
         {/* Student area - requires authentication */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<StudentDashboardPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/map" element={<MapPage />} />
 
           {/* Lost Items Routes (Developer 2 - Nived) */}
           <Route path="/lost" element={<LostItemsListPage />} />
@@ -81,7 +90,7 @@ function App() {
           <Route path="/my-lost" element={<MyLostItemsPage />} />
           <Route path="/report" element={<ReportLostItemPage />} />
           <Route path="/report/lost" element={<ReportLostItemPage />} />
-          <Route path="/report/found" element={<ReportForm />} />
+          <Route path="/report/found" element={<ReportFoundItemPage />} />
 
           {/* Found Items Routes (Developer 3 - Sahla) */}
           <Route path="/found" element={<FoundItemsPage />} />
@@ -98,7 +107,6 @@ function App() {
           <Route path="/claims" element={<MyClaimsPage />} />
           <Route path="/claims/new" element={<CreateClaimPage />} />
           <Route path="/claims/:id" element={<ClaimDetailPage />} />
-          <Route path="/details" element={<Details />} />
           <Route path="/profile" element={<ProfilePage />} />
 
           {/* Admin area - requires ADMIN role */}
@@ -109,6 +117,8 @@ function App() {
               <Route path="lost-items" element={<AdminLostItemsPage />} />
               <Route path="found-items" element={<AdminFoundItemsPage />} />
               <Route path="claims" element={<AdminClaimsPage />} />
+              <Route path="categories" element={<AdminConfigurationPage />} />
+              <Route path="configuration" element={<AdminConfigurationPage />} />
               <Route path="return-history" element={<AdminReturnHistoryPage />} />
               <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
             </Route>
@@ -123,6 +133,7 @@ function App() {
 
 function ShellLayout() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -151,7 +162,12 @@ function ShellLayout() {
 
   const effectiveUnread = isAuthenticated ? unreadCount : 0
 
-  const go = (path: string) => { navigate(path); setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+  const go = (path: string) => {
+    navigate(path)
+    setMenuOpen(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const initials = user
     ? user.studentName.split(' ').filter(Boolean).map((part) => part[0]).slice(0, 2).join('').toUpperCase()
     : ''
@@ -159,13 +175,54 @@ function ShellLayout() {
   return (
     <div className="app-shell">
       <header className="navbar">
-        <button className="brand" onClick={() => go('/')} aria-label="Go to College Lost and Found home"><span className="brand-mark"><i className="bi bi-box-seam" /></span><span>College <strong>Lost &amp; Found</strong></span></button>
-        <nav className={menuOpen ? 'nav-links open' : 'nav-links'} aria-label="Main navigation">{navItems.map((item) => <button className="nav-link" key={item.path} onClick={() => go(item.path)}><i className={`bi ${item.icon}`} />{item.label}</button>)}</nav>
+        <button className="brand" onClick={() => go('/')} aria-label="Go to College Lost and Found home">
+          <Logo size={32} />
+          <span>College <strong>Lost &amp; Found</strong></span>
+        </button>
+        <nav className={menuOpen ? 'nav-links open' : 'nav-links'} aria-label="Main navigation">
+          {navItems.map((item) => (
+            <button
+              className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
+              key={item.path}
+              onClick={() => go(item.path)}
+            >
+              <i className={`bi ${item.icon}`} />
+              {item.label}
+            </button>
+          ))}
+          {menuOpen && isAuthenticated && (
+            <div className="mobile-nav-extras">
+              <button className="nav-link" onClick={() => go('/dashboard')}>
+                <i className="bi bi-grid-1x2" /> Dashboard
+              </button>
+              <button className="nav-link" onClick={() => go('/profile')}>
+                <i className="bi bi-person" /> Profile ({user?.studentName})
+              </button>
+              {isAdmin && (
+                <button className="nav-link admin-link" onClick={() => go('/admin/dashboard')}>
+                  <i className="bi bi-speedometer2" /> Admin Console
+                </button>
+              )}
+              <button className="nav-link text-danger" onClick={logout}>
+                <i className="bi bi-box-arrow-right" /> Log out
+              </button>
+            </div>
+          )}
+        </nav>
         <div className="nav-actions">
+          <button
+            className="icon-button theme-toggle-btn"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            <i className={`bi ${theme === 'light' ? 'bi-moon-stars' : 'bi-sun'}`} />
+          </button>
+
           {isAuthenticated ? (
             <>
               <button
-                className="icon-button"
+                className="icon-button notif-nav-btn"
                 aria-label="Notifications"
                 onClick={() => go('/notifications')}
                 title="Notifications"
@@ -177,12 +234,36 @@ function ShellLayout() {
                   <span className="notification-dot" />
                 )}
               </button>
-              <button className="avatar" aria-label="Open profile" onClick={() => go('/profile')}>{initials}</button>
-              <button className="button primary small" onClick={() => go('/report')}><i className="bi bi-plus-lg" /> Report item</button>
+              <button
+                className="avatar"
+                aria-label="Open profile"
+                onClick={() => go('/profile')}
+                title={`Signed in as ${user?.studentName || 'User'}`}
+              >
+                {user?.profileImageUrl ? (
+                  <img
+                    src={user.profileImageUrl}
+                    alt={user.studentName}
+                    className="navbar-avatar-img"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = 'none';
+                      const next = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (next) next.style.display = 'grid';
+                    }}
+                  />
+                ) : null}
+                <span
+                  className="navbar-avatar-initials"
+                  style={{ display: user?.profileImageUrl ? 'none' : 'grid' }}
+                >
+                  {initials}
+                </span>
+              </button>
+              <button className="button primary small nav-report-btn" onClick={() => go('/report')}><i className="bi bi-plus-lg" /> Report item</button>
               {isAdmin && (
-                <button className="nav-link admin-link" onClick={() => go('/admin/dashboard')}><i className="bi bi-speedometer2" /> Admin</button>
+                <button className="nav-link admin-link nav-admin-badge-btn" onClick={() => go('/admin/dashboard')}><i className="bi bi-speedometer2" /> Admin</button>
               )}
-              <button className="icon-button" aria-label="Log out" onClick={logout}><i className="bi bi-box-arrow-right" /></button>
+              <button className="icon-button logout-btn" aria-label="Log out" onClick={logout} title="Log out"><i className="bi bi-box-arrow-right" /></button>
             </>
           ) : (
             <>
@@ -191,44 +272,431 @@ function ShellLayout() {
             </>
           )}
         </div>
-        <button className="menu-button" aria-label="Toggle menu" onClick={() => setMenuOpen(!menuOpen)}><i className={menuOpen ? 'bi bi-x-lg' : 'bi bi-list'} /></button>
+        <button className="menu-button" aria-label="Toggle menu" onClick={() => setMenuOpen(!menuOpen)}>
+          <i className={menuOpen ? 'bi bi-x-lg' : 'bi bi-list'} />
+        </button>
       </header>
       <main>
         <Outlet />
       </main>
-      <footer><div className="footer-brand"><span className="brand-mark"><i className="bi bi-box-seam" /></span><div><strong>College Lost &amp; Found</strong><p>Helping campus belongings find their way home.</p></div></div><div className="footer-links"><button onClick={() => go('/lost')}>Lost items</button><button onClick={() => go('/found')}>Found items</button><button onClick={() => go('/claims')}>Claims</button><button onClick={() => go('/about')}>How it works</button><button onClick={() => go('/report')}>Report an item</button></div><span className="copyright">© 2026 Campus Services</span></footer>
+      <footer>
+        <div className="page-width footer-inner">
+          <div className="footer-brand">
+            <Logo size={34} />
+            <div>
+              <strong>College Lost &amp; Found</strong>
+              <p>Reuniting students with what matters.</p>
+            </div>
+          </div>
+          <div className="footer-links">
+            <button onClick={() => go('/')}>Home</button>
+            <button onClick={() => go('/search')}>Search</button>
+            <button onClick={() => go('/lost')}>Lost items</button>
+            <button onClick={() => go('/found')}>Found items</button>
+            <button onClick={() => go('/claims')}>Claims</button>
+            <button onClick={() => go('/about')}>About</button>
+          </div>
+          <span className="copyright">© 2026 College Lost &amp; Found. All rights reserved.</span>
+        </div>
+      </footer>
     </div>
   )
 }
 
 function Home() {
   const navigate = useNavigate()
-  return <><section className="hero-section page-width"><div className="hero-copy"><span className="eyebrow"><i className="bi bi-stars" /> A better way to reconnect</span><h1>Lost something?<br /><em>Let's help you find it.</em></h1><p>One trusted place for students to report missing belongings, browse found items, and reconnect with what matters.</p><div className="hero-actions"><button className="button primary" onClick={() => navigate('/report')}><i className="bi bi-plus-lg" /> Report lost item</button><button className="button secondary" onClick={() => navigate('/found')}>Browse found items <i className="bi bi-arrow-right" /></button></div><div className="trust-note"><span className="avatar-stack"><b>AM</b><b>KL</b><b>RS</b></span><span>Trusted by <strong>2,400+ students</strong> this semester</span></div></div><div className="hero-visual"><div className="visual-label"><i className="bi bi-check-circle-fill" /> Item reunited</div><div className="campus-card"><div className="campus-image"><div className="sun" /><div className="building b-one" /><div className="building b-two" /><div className="tree t-one" /><div className="tree t-two" /><div className="path" /></div><div className="found-ticket"><span className="item-icon red"><i className="bi bi-book" /></span><div><strong>Calculus textbook</strong><small>Found at Science Building</small></div><i className="bi bi-arrow-up-right" /></div></div><div className="visual-pin"><i className="bi bi-geo-alt-fill" /><span>North campus</span></div></div></section><section className="quick-actions page-width"><div><span className="section-kicker">START HERE</span><h2>What do you need today?</h2></div><div className="action-grid"><Action icon="bi-search" title="Find an item" text="Browse lost and found reports" onClick={() => navigate('/search')} /><Action icon="bi-flag" title="Report lost" text="Tell the campus community" onClick={() => navigate('/report')} /><Action icon="bi-box-seam" title="Report found" text="Help return an item" onClick={() => navigate('/found/new')} /><Action icon="bi-grid-1x2" title="My dashboard" text="Track your activity" onClick={() => navigate('/dashboard')} /></div></section><section className="section-band"><div className="page-width"><SectionHeading kicker="RECENT ACTIVITY" title="Items making their way home" action="View all items" onClick={() => navigate('/search')} /><div className="item-grid">{items.map((item) => <ItemCard key={item.name} item={item} onClick={() => navigate('/details')} />)}</div></div></section><HowItWorks /><section className="stats-section page-width"><div><span className="section-kicker">CAMPUS AT A GLANCE</span><h2>Small actions make a<br />big difference.</h2></div><div className="stats-grid"><Stat value="1,284" label="Items reported" /><Stat value="846" label="Items reunited" /><Stat value="94%" label="Return rate" /><Stat value="2.4k" label="Active students" /></div></section><section className="cta page-width"><div><span className="eyebrow">Make a difference today</span><h2>That thing you found?<br />It might mean everything to someone.</h2></div><button className="button white" onClick={() => navigate('/report')}>Report an item <i className="bi bi-arrow-up-right" /></button></section></>
+  const [recentItems, setRecentItems] = useState<UnifiedRecentItem[]>([])
+  const [loadingItems, setLoadingItems] = useState(true)
+
+  useEffect(() => {
+    let isMounted = true
+    async function fetchRecentActivity() {
+      try {
+        const [lostList, foundList] = await Promise.allSettled([
+          getAllLostItems(),
+          foundItemService.getAll(),
+        ])
+
+        const unified: UnifiedRecentItem[] = []
+
+        if (lostList.status === 'fulfilled' && Array.isArray(lostList.value)) {
+          lostList.value
+            .filter((item: LostItem) => item.status !== 'RETURNED' && !item.isArchived)
+            .forEach((item: LostItem) => {
+              unified.push({
+                id: item.id,
+                name: item.itemName,
+                kind: 'Lost',
+                category: item.category,
+                location: item.lastSeenLocation,
+                date: item.lostDateTime,
+                status: item.isUrgent ? 'Urgent' : 'Active',
+                imageUrl: item.imageUrl,
+                color: item.color,
+              })
+            })
+        }
+
+        if (foundList.status === 'fulfilled' && Array.isArray(foundList.value)) {
+          foundList.value
+            .filter((item: FoundItem) => item.status !== 'RETURNED')
+            .forEach((item: FoundItem) => {
+              unified.push({
+                id: item.id,
+                name: item.itemName,
+                kind: 'Found',
+                category: item.category,
+                location: item.foundLocation,
+                date: item.foundDateTime,
+                status: 'Awaiting Claim',
+                imageUrl: item.imageUrl,
+                color: item.color,
+              })
+            })
+        }
+
+        // Sort latest first
+        unified.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+        if (isMounted) {
+          setRecentItems(unified.slice(0, 4))
+          setLoadingItems(false)
+        }
+      } catch {
+        if (isMounted) setLoadingItems(false)
+      }
+    }
+
+    fetchRecentActivity()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  return (
+    <>
+      <section className="hero-section page-width">
+        <div className="hero-copy">
+          <span className="eyebrow"><i className="bi bi-stars" /> AI-Powered Campus Recovery</span>
+          <h1>Lost something on campus?<br /><em>Let's help you find it.</em></h1>
+          <p>
+            One unified editorial space for students to report missing belongings, browse verified found items,
+            and match belongings in real-time.
+          </p>
+          <div className="hero-actions">
+            <button className="button primary" onClick={() => navigate('/report')}>
+              <i className="bi bi-plus-lg" /> Report lost item
+            </button>
+            <button className="button secondary" onClick={() => navigate('/found')}>
+              Browse found items <i className="bi bi-arrow-right" />
+            </button>
+          </div>
+          <div className="trust-note">
+            <span className="avatar-stack"><b>AM</b><b>KL</b><b>RS</b></span>
+            <span>Trusted by <strong>2,400+ students</strong> at Jyothi Engineering College</span>
+          </div>
+        </div>
+
+        <div className="hero-visual">
+          <div className="product-mockup-card">
+            <div className="browser-chrome">
+              <div className="browser-dots">
+                <div className="browser-dot" />
+                <div className="browser-dot" />
+                <div className="browser-dot" />
+              </div>
+              <div className="browser-tabs">
+                <span className="browser-tab"><i className="bi bi-cpu" /> smart-matching-engine</span>
+                <span className="browser-tab"><i className="bi bi-shield-check" /> verified-handoff</span>
+              </div>
+            </div>
+            <div style={{ padding: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: 'var(--color-primary-soft)',
+                    color: 'var(--color-cobalt)',
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontSize: '18px'
+                  }}>
+                    <i className="bi bi-radar" />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-text-primary)' }}>Live Campus Detection</div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Automated TF-IDF + NLP Matching</div>
+                  </div>
+                </div>
+                <span className="badge found" style={{ fontSize: '11px' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#059669', display: 'inline-block' }} />
+                  SYSTEM ACTIVE
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{
+                  padding: '12px 14px',
+                  borderRadius: '10px',
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <i className="bi bi-laptop" style={{ color: 'var(--color-cobalt)', fontSize: '16px' }} />
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)' }}>Smart Match Threshold &gt; 50%</div>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Instant Email &amp; In-App Notification</div>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#059669', background: 'rgba(5, 150, 105, 0.1)', padding: '3px 8px', borderRadius: '20px' }}>
+                    Auto-Alert
+                  </span>
+                </div>
+
+                <div style={{
+                  padding: '12px 14px',
+                  borderRadius: '10px',
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <i className="bi bi-shield-lock" style={{ color: '#7c3aed', fontSize: '16px' }} />
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)' }}>Encrypted Claim Verification</div>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Owner-Only Distinction Checks</div>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#7c3aed', background: 'rgba(124, 58, 237, 0.1)', padding: '3px 8px', borderRadius: '20px' }}>
+                    Safe Handoff
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="quick-actions page-width">
+        <div>
+          <span className="section-kicker">START HERE</span>
+          <h2>What do you need today?</h2>
+        </div>
+        <div className="action-grid">
+          <Action icon="bi-search" title="Find an item" text="Browse lost and found reports" onClick={() => navigate('/search')} />
+          <Action icon="bi-flag" title="Report lost" text="Tell the campus community" onClick={() => navigate('/report')} />
+          <Action icon="bi-box-seam" title="Report found" text="Help return an item" onClick={() => navigate('/found/new')} />
+          <Action icon="bi-grid-1x2" title="My dashboard" text="Track your activity" onClick={() => navigate('/dashboard')} />
+        </div>
+      </section>
+
+      <section className="section-band">
+        <div className="page-width">
+          <SectionHeading kicker="RECENT ACTIVITY" title="Items making their way home" action="View all items" onClick={() => navigate('/search')} />
+          
+          {loadingItems ? (
+            <div className="state-container" style={{ minHeight: '180px' }}>
+              <span className="loader-spinner" />
+              <p style={{ marginTop: '12px' }}>Loading real-time campus activity...</p>
+            </div>
+          ) : recentItems.length === 0 ? (
+            <div className="state-container empty" style={{ minHeight: '180px' }}>
+              <div className="empty-icon-wrap"><i className="bi bi-inbox" /></div>
+              <h3>No items reported yet</h3>
+              <p>Be the first to report a lost or found item on campus.</p>
+              <button className="button primary small" onClick={() => navigate('/report')}>
+                <i className="bi bi-plus-lg" /> Report an item
+              </button>
+            </div>
+          ) : (
+            <div className="item-grid">
+              {recentItems.map((item) => (
+                <RealItemCard
+                  key={`${item.kind}-${item.id}`}
+                  item={item}
+                  onClick={() => navigate(item.kind === 'Lost' ? `/lost/${item.id}` : `/found/${item.id}`)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <HowItWorks />
+
+      <section className="stats-section page-width">
+        <div>
+          <span className="section-kicker">CAMPUS AT A GLANCE</span>
+          <h2>Small actions make a<br />big difference.</h2>
+        </div>
+        <div className="stats-grid">
+          <Stat value="1,284" label="Items reported" />
+          <Stat value="846" label="Items reunited" />
+          <Stat value="94%" label="Return rate" />
+          <Stat value="2.4k" label="Active students" />
+        </div>
+      </section>
+
+      <section className="cta page-width">
+        <div>
+          <span className="eyebrow">Make a difference today</span>
+          <h2>That thing you found?<br />It might mean everything to someone.</h2>
+        </div>
+        <button className="button white" onClick={() => navigate('/report')}>
+          Report an item <i className="bi bi-arrow-up-right" />
+        </button>
+      </section>
+    </>
+  )
 }
 
-function Action({ icon, title, text, onClick }: { icon: string; title: string; text: string; onClick: () => void }) { return <button className="action-card" onClick={onClick}><span className="action-icon"><i className={`bi ${icon}`} /></span><span><strong>{title}</strong><small>{text}</small></span><i className="bi bi-arrow-up-right arrow" /></button> }
-function SectionHeading({ kicker, title, action, onClick }: { kicker: string; title: string; action?: string; onClick?: () => void }) { return <div className="section-heading"><div><span className="section-kicker">{kicker}</span><h2>{title}</h2></div>{action && <button className="text-button" onClick={onClick}>{action} <i className="bi bi-arrow-right" /></button>}</div> }
-function ItemCard({ item, onClick }: { item: Item; onClick: () => void }) { return <article className="item-card"><div className={`item-image ${item.color}`}><i className={`bi ${item.icon}`} /><span className={item.kind === 'Lost' ? 'badge lost' : 'badge found'}>{item.kind}</span></div><div className="item-info"><div className="item-title"><h3>{item.name}</h3><button aria-label={`More options for ${item.name}`}><i className="bi bi-three-dots" /></button></div><p className="meta"><i className="bi bi-tag" />{item.category} <i className="bi bi-geo-alt" />{item.location}</p><div className="card-bottom"><span><i className="bi bi-calendar3" /> {item.date}</span><span className={item.status === 'Matched' ? 'status success' : 'status'}>{item.status}</span></div><button className="details-link" onClick={onClick}>View details <i className="bi bi-arrow-up-right" /></button></div></article> }
-function HowItWorks() { return <section className="how-section page-width"><SectionHeading kicker="HOW IT WORKS" title="From missing to returned" /><div className="steps"><Step number="01" icon="bi-pencil-square" title="Report" text="Share a few details about what is lost or found." /><Step number="02" icon="bi-search" title="Match" text="Browse reports and get notified about possible matches." /><Step number="03" icon="bi-hand-thumbs-up" title="Claim" text="Verify the details and request a safe handoff." /><Step number="04" icon="bi-house-heart" title="Return" text="Reconnect the item with its owner." /></div></section> }
-function Step({ number, icon, title, text }: { number: string; icon: string; title: string; text: string }) { return <div className="step"><span className="step-number">{number}</span><span className="step-icon"><i className={`bi ${icon}`} /></span><h3>{title}</h3><p>{text}</p></div> }
-function Stat({ value, label }: { value: string; label: string }) { return <div className="stat"><strong>{value}</strong><span>{label}</span></div> }
-
-
-function Dashboard() {
-  const navigate = useNavigate()
-  return <section className="dashboard page-width"><div className="dashboard-head"><div><span className="section-kicker">STUDENT DASHBOARD</span><h1>Good morning, Jordan <span>✦</span></h1><p>Here is what is happening with your reports.</p></div><button className="button primary" onClick={() => navigate('/report')}><i className="bi bi-plus-lg" /> New report</button></div><div className="dashboard-stats"><div style={{ cursor: 'pointer' }} onClick={() => navigate('/my-lost')}><span className="mini-icon blue-bg"><i className="bi bi-flag" /></span><strong>Lost</strong><small>My lost reports</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon green-bg"><i className="bi bi-box-seam" /></span><strong>1</strong><small>Found reports</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon yellow-bg"><i className="bi bi-stars" /></span><strong>3</strong><small>Possible matches</small><i className="bi bi-arrow-up-right" /></div><div><span className="mini-icon purple-bg"><i className="bi bi-chat-square-text" /></span><strong>1</strong><small>Unread updates</small><i className="bi bi-arrow-up-right" /></div></div><div className="dashboard-columns"><div className="panel"><div className="panel-head"><div><span className="section-kicker">YOUR REPORTS</span><h2>Active reports</h2></div><button className="text-button" onClick={() => navigate('/my-lost')}>View all <i className="bi bi-arrow-right" /></button></div><div className="report-row"><span className="item-icon blue"><i className="bi bi-backpack2" /></span><div><strong>Navy blue backpack</strong><small>Lost · Harrison Library · Sep 02</small></div><span className="status">Active</span></div><div className="report-row"><span className="item-icon mint"><i className="bi bi-cup-straw" /></span><div><strong>Silver water bottle</strong><small>Lost · North Gym · Aug 30</small></div><span className="status">Active</span></div><button className="add-report" onClick={() => navigate('/report')}><i className="bi bi-plus" /> Add another report</button></div><div className="panel"><div className="panel-head"><div><span className="section-kicker">UPDATES</span><h2>Recent activity</h2></div><button className="icon-button" aria-label="More activity"><i className="bi bi-three-dots" /></button></div><div className="activity"><span className="activity-dot green" /><div><strong>New possible match</strong><p>Your backpack may match a found report.</p><small>2 hours ago</small></div></div><div className="activity"><span className="activity-dot blue-dot" /><div><strong>Report submitted</strong><p>Your lost item report is now visible.</p><small>Yesterday</small></div></div><div className="activity"><span className="activity-dot gray" /><div><strong>Welcome to campus</strong><p>Complete your profile to get started.</p><small>Sep 01, 2026</small></div></div></div></div></section>
+function Action({ icon, title, text, onClick }: { icon: string; title: string; text: string; onClick: () => void }) {
+  return (
+    <button className="action-card" onClick={onClick}>
+      <span className="action-icon"><i className={`bi ${icon}`} /></span>
+      <span><strong>{title}</strong><small>{text}</small></span>
+      <i className="bi bi-arrow-up-right arrow" />
+    </button>
+  )
 }
 
-function ReportForm() {
-  const navigate = useNavigate()
-  return <section className="form-page page-width"><div className="form-intro"><span className="section-kicker">NEW REPORT</span><h1>Help an item find its way home.</h1><p>Share the details you remember. You can always edit your report later.</p><div className="form-tabs"><button className="active"><i className="bi bi-flag" /> I lost an item</button><button type="button" onClick={() => navigate('/found/new')}><i className="bi bi-box-seam" /> I found an item</button></div></div><form className="report-form" onSubmit={(event) => { event.preventDefault(); navigate('/dashboard') }}><div className="form-section"><h2>Item details</h2><p>Start with the details people will use to recognize it.</p><label>Item name <span>*</span><input placeholder="e.g. Black Hydro Flask" /></label><div className="two-fields"><label>Category <span>*</span><select><option>Select a category</option><option>Electronics</option><option>Books</option><option>Personal items</option></select></label><label>Color <span>*</span><input placeholder="e.g. Navy blue" /></label></div><label>Description <span>*</span><textarea rows={4} placeholder="Add distinguishing details, stickers, marks, or contents..." /></label><label>Photo <small>Optional</small><div className="upload"><i className="bi bi-cloud-arrow-up" /><strong>Drop an image here, or browse</strong><span>PNG, JPG up to 10MB</span></div></label></div><div className="form-section"><h2>When and where?</h2><p>Approximate details are helpful too.</p><div className="two-fields"><label>Date lost <span>*</span><input type="date" /></label><label>Time <small>Optional</small><input type="time" /></label></div><label>Last seen location <span>*</span><select><option>Select a campus location</option><option>Harrison Library</option><option>Student Union</option><option>North Gym</option><option>Science Building</option></select></label></div><div className="form-actions"><button type="button" className="button secondary" onClick={() => navigate('/')}>Cancel</button><button type="submit" className="button primary">Submit report <i className="bi bi-arrow-right" /></button></div></form></section>
+function SectionHeading({ kicker, title, action, onClick }: { kicker: string; title: string; action?: string; onClick?: () => void }) {
+  return (
+    <div className="section-heading">
+      <div>
+        <span className="section-kicker">{kicker}</span>
+        <h2>{title}</h2>
+      </div>
+      {action && (
+        <button className="text-button" onClick={onClick}>
+          {action} <i className="bi bi-arrow-right" />
+        </button>
+      )}
+    </div>
+  )
 }
 
-function Details() {
-  const navigate = useNavigate()
-  const item = items[0]
-  return <section className="details-page page-width"><button className="back-button" onClick={() => navigate('/search')}><i className="bi bi-arrow-left" /> Back to items</button><div className="details-layout"><div className={`detail-image ${item.color}`}><i className={`bi ${item.icon}`} /><span className="badge lost">Lost</span></div><div className="detail-copy"><span className="section-kicker">LOST ITEM · REPORT #1048</span><h1>{item.name}</h1><p className="detail-sub">Reported by Jordan Davis · 2 days ago</p><div className="detail-facts"><span><i className="bi bi-tag" /><b>Category</b>{item.category}</span><span><i className="bi bi-geo-alt" /><b>Last seen</b>{item.location}</span><span><i className="bi bi-calendar3" /><b>Date lost</b>{item.date}</span></div><div className="description"><h2>Description</h2><p>Dark navy backpack with a small university patch on the front pocket. Contains a blue notebook and a silver water bottle. Last seen near the second-floor study area.</p></div><div className="detail-actions"><button className="button primary" onClick={() => navigate('/dashboard')}><i className="bi bi-chat" /> I have seen this</button><button className="button secondary"><i className="bi bi-share" /> Share report</button></div><div className="safety-note"><i className="bi bi-shield-check" /><span><strong>Keep it safe</strong><small>Never share sensitive personal information. Meet in a public campus location.</small></span></div></div></div></section>
+function getCategoryIcon(category: string): string {
+  const c = (category || '').toLowerCase()
+  if (c.includes('bag') || c.includes('backpack')) return 'bi-backpack2'
+  if (c.includes('phone') || c.includes('mobile')) return 'bi-phone'
+  if (c.includes('book') || c.includes('notebook')) return 'bi-book'
+  if (c.includes('key')) return 'bi-key'
+  if (c.includes('card') || c.includes('id')) return 'bi-person-badge'
+  if (c.includes('electronic') || c.includes('earbud') || c.includes('laptop')) return 'bi-laptop'
+  if (c.includes('bottle') || c.includes('flask')) return 'bi-cup-straw'
+  if (c.includes('wallet') || c.includes('purse')) return 'bi-wallet2'
+  return 'bi-box-seam'
 }
-function About() { return <section className="about-page page-width"><span className="section-kicker">OUR PURPOSE</span><h1>A more connected campus,<br /><em>one return at a time.</em></h1><p className="about-lead">College Lost &amp; Found is a shared campus space designed to make reporting, searching, and returning belongings feel simple.</p><div className="about-grid"><Step number="01" icon="bi-pencil-square" title="Make it visible" text="A clear report gives a missing item its best chance of being recognized." /><Step number="02" icon="bi-people" title="Look out for each other" text="Our campus community is strongest when small acts of care are easy to make." /><Step number="03" icon="bi-shield-check" title="Return with confidence" text="Simple details and safe handoffs help make every reunion feel right." /></div></section> }
+
+function formatRelativeDate(isoDate: string): string {
+  try {
+    const d = new Date(isoDate)
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  } catch {
+    return isoDate
+  }
+}
+
+function RealItemCard({ item, onClick }: { item: UnifiedRecentItem; onClick: () => void }) {
+  const [imgErr, setImgErr] = useState(false)
+  return (
+    <article className="item-card" onClick={onClick} style={{ cursor: 'pointer' }}>
+      <div className="item-image" style={{ position: 'relative', overflow: 'hidden', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-lavender-mist)' }}>
+        {item.imageUrl && !imgErr ? (
+          <img
+            src={item.imageUrl}
+            alt={item.name}
+            onError={() => setImgErr(true)}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          <i className={`bi ${getCategoryIcon(item.category)}`} style={{ fontSize: '2.5rem', color: 'var(--color-cobalt)' }} />
+        )}
+        <span
+          className={item.kind === 'Lost' ? 'badge lost' : 'badge found'}
+          style={{ position: 'absolute', top: '10px', left: '10px' }}
+        >
+          {item.kind}
+        </span>
+      </div>
+      <div className="item-info">
+        <div className="item-title">
+          <h3>{item.name}</h3>
+        </div>
+        <p className="meta">
+          <span><i className="bi bi-tag" /> {item.category}</span>
+          <span><i className="bi bi-geo-alt" /> {item.location}</span>
+        </p>
+        <div className="card-bottom">
+          <span><i className="bi bi-calendar3" /> {formatRelativeDate(item.date)}</span>
+          <span className={item.kind === 'Found' ? 'status success' : 'status'}>{item.status}</span>
+        </div>
+        <button className="details-link" onClick={onClick}>
+          View details <i className="bi bi-arrow-up-right" />
+        </button>
+      </div>
+    </article>
+  )
+}
+
+function HowItWorks() {
+  return (
+    <section className="how-section page-width">
+      <SectionHeading kicker="HOW IT WORKS" title="From missing to returned" />
+      <div className="steps">
+        <Step number="01" icon="bi-pencil-square" title="Report" text="Share a few details about what is lost or found." />
+        <Step number="02" icon="bi-search" title="Match" text="Browse reports and get notified about possible matches." />
+        <Step number="03" icon="bi-hand-thumbs-up" title="Claim" text="Verify the details and request a safe handoff." />
+        <Step number="04" icon="bi-house-heart" title="Return" text="Reconnect the item with its owner." />
+      </div>
+    </section>
+  )
+}
+
+function Step({ number, icon, title, text }: { number: string; icon: string; title: string; text: string }) {
+  return (
+    <div className="step">
+      <span className="step-number">{number}</span>
+      <span className="step-icon"><i className={`bi ${icon}`} /></span>
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </div>
+  )
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="stat">
+      <strong>{value}</strong>
+      <span>{label}</span>
+    </div>
+  )
+}
+
+function About() {
+  return (
+    <section className="about-page page-width">
+      <span className="section-kicker">OUR PURPOSE</span>
+      <h1>A more connected campus,<br /><em>one return at a time.</em></h1>
+      <p className="about-lead">
+        College Lost &amp; Found is a shared campus space designed to make reporting, searching, and returning belongings feel simple.
+      </p>
+      <div className="about-grid">
+        <Step number="01" icon="bi-pencil-square" title="Make it visible" text="A clear report gives a missing item its best chance of being recognized." />
+        <Step number="02" icon="bi-people" title="Look out for each other" text="Our campus community is strongest when small acts of care are easy to make." />
+        <Step number="03" icon="bi-shield-check" title="Return with confidence" text="Simple details and safe handoffs help make every reunion feel right." />
+      </div>
+    </section>
+  )
+}
 
 export default App
+

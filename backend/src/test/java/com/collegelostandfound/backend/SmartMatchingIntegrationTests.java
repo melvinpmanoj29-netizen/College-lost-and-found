@@ -8,6 +8,7 @@ import com.collegelostandfound.backend.repository.ClaimRepository;
 import com.collegelostandfound.backend.repository.FoundItemRepository;
 import com.collegelostandfound.backend.repository.LostItemRepository;
 import com.collegelostandfound.backend.repository.MatchRepository;
+import com.collegelostandfound.backend.repository.NotificationRepository;
 import com.collegelostandfound.backend.repository.UserRepository;
 import com.collegelostandfound.backend.service.SmartMatchingService;
 import com.jayway.jsonpath.JsonPath;
@@ -60,11 +61,19 @@ class SmartMatchingIntegrationTests {
     @Autowired
     private ClaimRepository claimRepository;
 
+    @Autowired
+    private NotificationRepository notificationRepository;
+
     private String studentToken;
     private User studentUser;
 
     @BeforeEach
     void setup() throws Exception {
+        claimRepository.deleteAll();
+        matchRepository.deleteAll();
+        foundItemRepository.deleteAll();
+        lostItemRepository.deleteAll();
+        notificationRepository.deleteAll();
         userRepository.findByEmail(STUDENT_EMAIL).ifPresent(userRepository::delete);
 
         mockMvc.perform(post("/api/auth/register")
@@ -92,6 +101,7 @@ class SmartMatchingIntegrationTests {
         matchRepository.deleteAll();
         foundItemRepository.deleteAll();
         lostItemRepository.deleteAll();
+        notificationRepository.deleteAll();
         userRepository.findByEmail(STUDENT_EMAIL).ifPresent(userRepository::delete);
     }
 

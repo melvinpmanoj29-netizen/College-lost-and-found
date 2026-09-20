@@ -105,7 +105,16 @@ export default function LostItemCard({ item, showOwnerActions, onDelete }: LostI
 
           <div className="lost-card-actions">
             {showOwnerActions ? (
-              <div className="lost-card-owner-buttons">
+              <div className="lost-card-owner-buttons" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  className="button secondary small"
+                  style={{ fontSize: '0.78rem', padding: '0 8px', gap: '4px' }}
+                  title="View AI Smart Matches"
+                  onClick={() => navigate(`/matches/lost/${item.id}`)}
+                >
+                  <i className="bi bi-cpu" /> Matches
+                </button>
                 <button
                   type="button"
                   className="button secondary small icon-btn"
@@ -126,13 +135,27 @@ export default function LostItemCard({ item, showOwnerActions, onDelete }: LostI
                 )}
               </div>
             ) : (
-              <button
-                type="button"
-                className="details-link"
-                onClick={() => navigate(`/lost/${item.id}`)}
-              >
-                View details <i className="bi bi-arrow-right" />
-              </button>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  className="button secondary small"
+                  style={{ fontSize: '0.76rem', padding: '0 8px', gap: '4px' }}
+                  title="View AI Smart Matches"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigate(`/matches/lost/${item.id}`)
+                  }}
+                >
+                  <i className="bi bi-cpu" /> Matches
+                </button>
+                <button
+                  type="button"
+                  className="details-link"
+                  onClick={() => navigate(`/lost/${item.id}`)}
+                >
+                  View details <i className="bi bi-arrow-right" />
+                </button>
+              </div>
             )}
           </div>
         </div>

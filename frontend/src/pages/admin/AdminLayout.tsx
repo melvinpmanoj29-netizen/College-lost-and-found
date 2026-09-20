@@ -11,6 +11,7 @@ export default function AdminLayout() {
     { label: 'Lost Reports', path: '/admin/lost-items', icon: 'bi-flag' },
     { label: 'Found Reports', path: '/admin/found-items', icon: 'bi-box-seam' },
     { label: 'Claims Review', path: '/admin/claims', icon: 'bi-shield-check' },
+    { label: 'Form & Categories', path: '/admin/categories', icon: 'bi-sliders' },
     { label: 'Return History', path: '/admin/return-history', icon: 'bi-clock-history' },
   ]
 

@@ -39,6 +39,17 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         this.cloudinary = cloudinary;
     }
 
+    private String cleanValue(String val) {
+        if (val == null) return "";
+        String s = val.trim();
+        if ((s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'"))) {
+            if (s.length() >= 2) {
+                s = s.substring(1, s.length() - 1).trim();
+            }
+        }
+        return s;
+    }
+
     @Override
     public String uploadImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -54,10 +65,12 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             throw new IllegalArgumentException("Image must be smaller than 5 MB");
         }
 
-        if (cloudName == null || cloudName.isBlank()
-                || apiKey == null || apiKey.isBlank()
-                || apiSecret == null || apiSecret.isBlank()) {
-            throw new IllegalStateException("Cloudinary is not configured on the server");
+        String cName = cleanValue(cloudName);
+        String aKey = cleanValue(apiKey);
+        String aSecret = cleanValue(apiSecret);
+
+        if (cName.isBlank() || aKey.isBlank() || aSecret.isBlank()) {
+            throw new IllegalStateException("Cloudinary is not configured on the server. Please check cloudinary.cloud-name, api-key, and api-secret.");
         }
 
         try {

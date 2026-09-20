@@ -3,33 +3,7 @@ import { searchItems } from '../../services/searchService'
 import { getErrorMessage } from '../../services/api'
 import type { SearchFilterParams, SearchFoundItem, SearchLostItem } from '../../types/search'
 
-const CATEGORIES = [
-  'All categories',
-  'Wallet',
-  'Electronics',
-  'Books',
-  'Keys',
-  'Bags',
-  'ID Cards',
-  'Documents',
-  'Personal',
-  'Clothing',
-  'Other',
-]
-
-const LOCATIONS = [
-  'All locations',
-  'Library',
-  'Canteen',
-  'Student Union',
-  'Science Building',
-  'North Gym',
-  'Main Gate',
-  'Academic Block',
-  'Sports Complex',
-  'Parking',
-  'Other',
-]
+import { getActiveCategoryNames, getActiveLocationNames, getCategoryIcon } from '../../constants/categories'
 
 const STATUSES = ['All statuses', 'LOST', 'FOUND', 'RETURNED']
 
@@ -45,18 +19,6 @@ const COLORS = [
   'Yellow',
   'Other',
 ]
-
-function getCategoryIcon(category?: string): string {
-  const c = category?.toLowerCase() || ''
-  if (c.includes('wallet')) return 'bi-wallet2'
-  if (c.includes('electronic') || c.includes('phone') || c.includes('earbud')) return 'bi-laptop'
-  if (c.includes('book')) return 'bi-book'
-  if (c.includes('key')) return 'bi-key'
-  if (c.includes('bag') || c.includes('backpack')) return 'bi-backpack2'
-  if (c.includes('card') || c.includes('id')) return 'bi-person-badge'
-  if (c.includes('doc')) return 'bi-file-earmark-text'
-  return 'bi-box-seam'
-}
 
 function formatDate(isoString?: string): string {
   if (!isoString) return 'Date not specified'
@@ -218,7 +180,8 @@ export default function SearchPage() {
             onChange={(e) => setCategory(e.target.value)}
             aria-label="Filter by category"
           >
-            {CATEGORIES.map((cat) => (
+            <option value="All categories">All categories</option>
+            {getActiveCategoryNames().map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>
@@ -231,7 +194,8 @@ export default function SearchPage() {
             onChange={(e) => setLocation(e.target.value)}
             aria-label="Filter by location"
           >
-            {LOCATIONS.map((loc) => (
+            <option value="All locations">All locations</option>
+            {getActiveLocationNames().map((loc) => (
               <option key={loc} value={loc}>
                 {loc}
               </option>

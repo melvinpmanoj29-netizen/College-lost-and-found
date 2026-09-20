@@ -5,6 +5,7 @@ import foundItemService from '../../services/foundItemService'
 import { getErrorMessage } from '../../services/api'
 import type { FoundItem } from '../../types/foundItem'
 import FoundItemCard from '../../components/found-items/FoundItemCard'
+import { getActiveCategoryNames } from '../../constants/categories'
 
 export default function FoundItemsPage() {
   const navigate = useNavigate()
@@ -54,7 +55,7 @@ export default function FoundItemsPage() {
 
   // Extract unique categories for filter
   const categories = useMemo(() => {
-    const set = new Set<string>()
+    const set = new Set<string>(getActiveCategoryNames())
     items.forEach((item) => {
       if (item.category) set.add(item.category)
     })

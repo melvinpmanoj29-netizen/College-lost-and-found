@@ -4,32 +4,7 @@ import { createLostItem } from '../../services/lostItemService'
 import { getErrorMessage } from '../../services/api'
 import type { CreateLostItemRequest } from '../../types/lostItem'
 import ImageUploadField from '../../components/lost-items/ImageUploadField'
-
-const STANDARD_CATEGORIES = [
-  'Electronics',
-  'Bags & Backpacks',
-  'Books & Notebooks',
-  'ID Cards & Wallets',
-  'Keys',
-  'Water Bottles',
-  'Clothing & Accessories',
-  'Stationery',
-  'Other',
-]
-
-const CAMPUS_LOCATIONS = [
-  'Harrison Library',
-  'Student Union',
-  'North Gym',
-  'Science Building',
-  'Main Block',
-  'Campus Canteen',
-  'Sports Ground',
-  'Central Courtyard',
-  'Hostel Block',
-  'Parking Area',
-  'Other',
-]
+import { getActiveCategoryNames, getActiveLocationNames, getCategoryIcon } from '../../constants/categories'
 
 export default function ReportLostItemPage() {
   const navigate = useNavigate()
@@ -65,6 +40,34 @@ export default function ReportLostItemPage() {
 
   const effectiveLocation =
     lastSeenLocation === 'Other' ? customLocation.trim() : lastSeenLocation
+
+  // Popular campus locations for quick-pick chips
+  const quickLocations = [
+    'Central Library',
+    'Main Canteen',
+    'Decennial Block',
+    'Main Block',
+    'Sports Complex / Ground',
+    'Auditorium',
+    'Mechanical Lab',
+  ]
+
+  // Helpful description tags
+  const descriptionTags = [
+    'Has Keychain',
+    'Leather finish',
+    'Sticker attached',
+    'Contains Student ID',
+    'Black Case',
+    'Engraved initials',
+  ]
+
+  const addTagToDescription = (tag: string) => {
+    setDescription((prev) => {
+      if (prev.includes(tag)) return prev
+      return prev ? `${prev}, ${tag}` : tag
+    })
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -126,11 +129,11 @@ export default function ReportLostItemPage() {
   return (
     <section className="form-page page-width">
       <div className="form-intro">
-        <span className="section-kicker">NEW REPORT</span>
-        <h1>Report a lost item</h1>
+        <span className="section-kicker">COMMUNITY REPORTING</span>
+        <h1>Report a Lost Item</h1>
         <p>
-          Share the details you remember. Your report will be immediately searchable by other
-          students and campus staff.
+          Fill in the details you remember. Your report will be immediately searchable by students,
+          faculty, and campus security.
         </p>
 
         <div className="form-tabs">
@@ -146,205 +149,338 @@ export default function ReportLostItemPage() {
         </div>
       </div>
 
-      <form className="report-form" onSubmit={handleSubmit} noValidate>
-        {error && (
-          <div className="alert-banner" role="alert">
-            <i className="bi bi-exclamation-circle" />
-            <span>{error}</span>
-          </div>
-        )}
+      <div className="report-page-layout">
+        {/* Left Column: Form Fields */}
+        <form className="report-form" onSubmit={handleSubmit} noValidate>
+          {error && (
+            <div className="alert-banner" role="alert">
+              <i className="bi bi-exclamation-circle-fill" />
+              <span>{error}</span>
+            </div>
+          )}
 
-        {success && (
-          <div className="alert-banner success" role="status">
-            <i className="bi bi-check-circle" />
-            <span>Lost item reported successfully! Redirecting…</span>
-          </div>
-        )}
+          {success && (
+            <div className="alert-banner success" role="status">
+              <i className="bi bi-check-circle-fill" />
+              <span>Lost item reported successfully! Redirecting to item details…</span>
+            </div>
+          )}
 
-        <div className="form-section">
-          <h2>Item details</h2>
-          <p>Provide recognizable details so anyone who spots it can identify it.</p>
+          {/* Section 1: Item Details */}
+          <div className="form-section">
+            <div className="form-section-head">
+              <div className="form-step-num">1</div>
+              <h2>Item Information</h2>
+            </div>
+            <p>Provide recognizable details so anyone who spots it can quickly identify it.</p>
 
-          <label>
-            Item name <span className="req">*</span>
-            <input
-              type="text"
-              placeholder="e.g. Navy Blue Nike Backpack, Casio FX-991EX Calculator"
-              value={itemName}
-              onChange={(e) => setItemName(e.target.value)}
-              required
-            />
-          </label>
+            <div className="two-fields">
+              <label>
+                Item Name <span className="req">*</span>
+                <input
+                  type="text"
+                  placeholder="e.g. Dell Inspiron Charger, Blue Water Bottle"
+                  value={itemName}
+                  onChange={(e) => setItemName(e.target.value)}
+                  required
+                />
+              </label>
 
-          <div className="two-fields">
+              <label>
+                Primary Color <small>(Optional)</small>
+                <input
+                  type="text"
+                  placeholder="e.g. Navy Blue, Matte Black"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                />
+              </label>
+            </div>
+
+            {/* Visual Category Selection Grid */}
+            <div className="category-selection-block">
+              <span className="form-inner-label">
+                Select Category <span className="req">*</span>
+              </span>
+              <div className="category-pill-grid">
+                {getActiveCategoryNames().map((cat) => {
+                  const icon = getCategoryIcon(cat)
+                  const isSelected = category === cat
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      className={`category-pill-btn ${isSelected ? 'active' : ''}`}
+                      onClick={() => setCategory(cat)}
+                    >
+                      <i className={`bi ${icon}`} />
+                      <span>{cat}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
             <label>
-              Category <span className="req">*</span>
+              Detailed Description <span className="req">*</span>
+              <textarea
+                rows={3}
+                placeholder="Describe distinguishing marks, stickers, wear and tear, internal contents, or brand model..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              />
+              {/* Quick Tags for Description */}
+              <div className="desc-quick-tags">
+                <span className="quick-tags-label">Quick tags:</span>
+                {descriptionTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    className="tag-pill-btn"
+                    onClick={() => addTagToDescription(tag)}
+                  >
+                    + {tag}
+                  </button>
+                ))}
+              </div>
+              <div className="textarea-footer">
+                <span>Include unique details (e.g. keychains, scratches, labels)</span>
+                <span>{description.length} characters</span>
+              </div>
+            </label>
+          </div>
+
+          {/* Section 2: Time & Campus Location */}
+          <div className="form-section">
+            <div className="form-section-head">
+              <div className="form-step-num">2</div>
+              <h2>When &amp; Where Was It Lost?</h2>
+            </div>
+            <p>Approximate times and campus locations help match with reported found items.</p>
+
+            <div className="two-fields">
+              <label>
+                Date Lost <span className="req">*</span>
+                <input
+                  type="date"
+                  value={lostDate}
+                  onChange={(e) => setLostDate(e.target.value)}
+                  required
+                />
+              </label>
+
+              <label>
+                Time Lost <small>(Approximate)</small>
+                <input
+                  type="time"
+                  value={lostTime}
+                  onChange={(e) => setLostTime(e.target.value)}
+                />
+              </label>
+            </div>
+
+            <label>
+              Last Seen Campus Location <span className="req">*</span>
               <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                value={lastSeenLocation}
+                onChange={(e) => setLastSeenLocation(e.target.value)}
                 required
               >
-                <option value="">Select a category</option>
-                {STANDARD_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
+                <option value="">Select a campus location</option>
+                {getActiveLocationNames().map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
                   </option>
                 ))}
               </select>
             </label>
 
-            <label>
-              Color <small>(Optional)</small>
-              <input
-                type="text"
-                placeholder="e.g. Black, Silver, Navy"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-              />
-            </label>
+            {/* Quick Location Chips */}
+            <div className="location-chips-wrap">
+              <span className="location-chips-label">Popular Locations:</span>
+              <div className="location-chips">
+                {quickLocations.map((loc) => (
+                  <button
+                    key={loc}
+                    type="button"
+                    className={`location-chip-btn ${lastSeenLocation === loc ? 'active' : ''}`}
+                    onClick={() => setLastSeenLocation(loc)}
+                  >
+                    <i className="bi bi-geo-alt-fill" /> {loc}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {lastSeenLocation === 'Other' && (
+              <label>
+                Specify Custom Location <span className="req">*</span>
+                <input
+                  type="text"
+                  placeholder="e.g. 2nd floor corridor near CS Lab 3"
+                  value={customLocation}
+                  onChange={(e) => setCustomLocation(e.target.value)}
+                  required
+                />
+              </label>
+            )}
           </div>
 
-          <label>
-            Description <span className="req">*</span>
-            <textarea
-              rows={4}
-              placeholder="Describe unique marks, stickers, wear and tear, internal contents, or identifying features…"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-            />
-          </label>
+          {/* Section 3: Photo, Priority & Lifecycle */}
+          <div className="form-section">
+            <div className="form-section-head">
+              <div className="form-step-num">3</div>
+              <h2>Photo &amp; Priority Settings</h2>
+            </div>
+            <p>High quality photos and urgent flags speed up recovery significantly.</p>
 
-          <div className="form-field-group">
-            <label className="field-group-label" htmlFor="lost-item-image-input">
-              Photo <small>(Optional — Upload to Cloudinary)</small>
-            </label>
-            <ImageUploadField
-              onImageUploaded={(url) => setImageUrl(url)}
-              onUploadingChange={(uploading) => setImageUploading(uploading)}
-            />
-          </div>
-        </div>
-
-        <div className="form-section">
-          <h2>When and where was it lost?</h2>
-          <p>Approximate times and locations help students trace where it might be.</p>
-
-          <div className="two-fields">
-            <label>
-              Date lost <span className="req">*</span>
-              <input
-                type="date"
-                value={lostDate}
-                onChange={(e) => setLostDate(e.target.value)}
-                required
+            <div className="form-field-group">
+              <label className="field-group-label" htmlFor="lost-item-image-input">
+                Item Photo <small>(Optional — Secure Cloudinary Upload)</small>
+              </label>
+              <ImageUploadField
+                onImageUploaded={(url) => setImageUrl(url)}
+                onUploadingChange={(uploading) => setImageUploading(uploading)}
               />
-            </label>
+            </div>
 
-            <label>
-              Time lost <small>(Approximate)</small>
+            {/* High Visibility Urgent Callout */}
+            <div className={`urgent-callout-box ${isUrgent ? 'active' : ''}`}>
               <input
-                type="time"
-                value={lostTime}
-                onChange={(e) => setLostTime(e.target.value)}
-              />
-            </label>
-          </div>
-
-          <label>
-            Last seen location <span className="req">*</span>
-            <select
-              value={lastSeenLocation}
-              onChange={(e) => setLastSeenLocation(e.target.value)}
-              required
-            >
-              <option value="">Select a campus location</option>
-              {CAMPUS_LOCATIONS.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          {lastSeenLocation === 'Other' && (
-            <label>
-              Specify location <span className="req">*</span>
-              <input
-                type="text"
-                placeholder="e.g. 2nd floor corridor near Lab 4"
-                value={customLocation}
-                onChange={(e) => setCustomLocation(e.target.value)}
-                required
-              />
-            </label>
-          )}
-        </div>
-
-        <div className="form-section">
-          <h2>Priority &amp; Lifecycle</h2>
-          <p>Urgent items receive high visibility. Expiry dates trigger archiving.</p>
-
-          <div className="checkbox-field">
-            <label className="checkbox-label">
-              <input
+                id="urgent-checkbox"
                 type="checkbox"
                 checked={isUrgent}
                 onChange={(e) => setIsUrgent(e.target.checked)}
               />
-              <span>
-                <strong>Mark as urgent item</strong>
-                <small>Recommended for College IDs, house/car keys, wallets, or essential documents.</small>
-              </span>
-            </label>
+              <label htmlFor="urgent-checkbox" className="urgent-callout-text">
+                <strong>
+                  <i className="bi bi-lightning-charge-fill" /> Mark as Urgent Item
+                </strong>
+                <p>
+                  Urgent items get top placement and an animated beacon. Recommended for College IDs,
+                  wallets, keys, and hall tickets.
+                </p>
+              </label>
+            </div>
+
+            <div className="two-fields">
+              <label>
+                Auto-Archive Date <small>(Default 30 days)</small>
+                <input
+                  type="date"
+                  value={expiryDate}
+                  onChange={(e) => setExpiryDate(e.target.value)}
+                />
+              </label>
+            </div>
           </div>
 
-          <label>
-            Auto-archive date <small>(Default 30 days)</small>
-            <input
-              type="date"
-              value={expiryDate}
-              onChange={(e) => setExpiryDate(e.target.value)}
-            />
-            <span className="auth-hint">
-              Unresolved reports are archived after this date to keep the directory fresh, while
-              preserving records for campus history.
-            </span>
-          </label>
-        </div>
+          {/* Actions Bar */}
+          <div className="form-actions">
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => navigate('/lost')}
+              disabled={submitting || imageUploading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="button primary"
+              disabled={submitting || imageUploading}
+            >
+              {imageUploading ? (
+                <>
+                  <span className="loader-spinner light" aria-hidden="true" />
+                  Uploading photo…
+                </>
+              ) : submitting ? (
+                <>
+                  <span className="loader-spinner light" aria-hidden="true" />
+                  Submitting report…
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-check-lg" /> Publish Lost Report
+                </>
+              )}
+            </button>
+          </div>
+        </form>
 
-        <div className="form-actions">
-          <button
-            type="button"
-            className="button secondary"
-            onClick={() => navigate('/lost')}
-            disabled={submitting || imageUploading}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="button primary"
-            disabled={submitting || imageUploading}
-          >
-            {imageUploading ? (
-              <>
-                <span className="loader-spinner light" aria-hidden="true" />
-                Uploading photo…
-              </>
-            ) : submitting ? (
-              <>
-                <span className="loader-spinner light" aria-hidden="true" />
-                Submitting report…
-              </>
-            ) : (
-              <>
-                <i className="bi bi-check-lg" /> Submit lost report
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+        {/* Right Column: Sticky Live Preview Panel */}
+        <aside className="form-preview-panel">
+          <div className="preview-panel-head">
+            <h3>
+              <i className="bi bi-eye" /> Live Feed Preview
+            </h3>
+            <span className="preview-pill">Real-time</span>
+          </div>
+
+          {/* Card representation */}
+          <div className="lost-item-card" style={{ boxShadow: 'none' }}>
+            <div className="lost-card-media">
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt="Preview"
+                  className="lost-card-image"
+                />
+              ) : (
+                <div className="lost-card-placeholder">
+                  <i className={`bi ${getCategoryIcon(category)}`} />
+                </div>
+              )}
+
+              <div className="lost-card-badges">
+                <span className="badge-status badge-status-lost">LOST</span>
+                {isUrgent && (
+                  <span className="badge-urgent">
+                    <i className="bi bi-exclamation-circle-fill" /> URGENT
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="lost-card-body">
+              <h4 className="lost-card-title">
+                {itemName.trim() || 'Item Name Preview'}
+              </h4>
+
+              <div className="lost-card-meta">
+                <span>
+                  <i className={`bi ${getCategoryIcon(category)}`} /> {category || 'Uncategorized'}
+                </span>
+                {color && <span>• {color}</span>}
+              </div>
+
+              <div className="lost-card-location">
+                <i className="bi bi-geo-alt" />
+                <span>{effectiveLocation || 'Campus location…'}</span>
+              </div>
+
+              <div className="lost-card-footer">
+                <span className="lost-card-date">
+                  <i className="bi bi-clock" /> {lostDate || 'Today'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="preview-tips-card">
+            <strong>
+              <i className="bi bi-shield-check" /> Tips for Faster Recovery
+            </strong>
+            <ul>
+              <li>Upload a clear photo if available.</li>
+              <li>Include unique stickers or marks in description.</li>
+              <li>Check the Found Items catalog frequently.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
     </section>
   )
 }

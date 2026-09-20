@@ -8,6 +8,7 @@ import com.collegelostandfound.backend.exception.ResourceNotFoundException;
 import com.collegelostandfound.backend.repository.FoundItemRepository;
 import com.collegelostandfound.backend.repository.LostItemRepository;
 import com.collegelostandfound.backend.repository.MatchRepository;
+import com.collegelostandfound.backend.service.EmailService;
 import com.collegelostandfound.backend.service.SmartMatchingService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,13 +33,19 @@ public class SmartMatchingServiceImpl implements SmartMatchingService {
     private final MatchRepository matchRepository;
     private final FoundItemRepository foundItemRepository;
     private final LostItemRepository lostItemRepository;
+    private final EmailService emailService;
+    private final com.collegelostandfound.backend.service.NotificationService notificationService;
 
     public SmartMatchingServiceImpl(MatchRepository matchRepository,
                                     FoundItemRepository foundItemRepository,
-                                    LostItemRepository lostItemRepository) {
+                                    LostItemRepository lostItemRepository,
+                                    EmailService emailService,
+                                    com.collegelostandfound.backend.service.NotificationService notificationService) {
         this.matchRepository = matchRepository;
         this.foundItemRepository = foundItemRepository;
         this.lostItemRepository = lostItemRepository;
+        this.emailService = emailService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -194,10 +201,15 @@ public class SmartMatchingServiceImpl implements SmartMatchingService {
             foundItem.getId()
         );
 
+        boolean isNewOrHigher = false;
+
         if (existingMatch.isPresent()) {
             Match match = existingMatch.get();
             // Don't overwrite if already claimed or resolved
             if ("POSSIBLE".equals(match.getMatchStatus())) {
+                if (score.compareTo(match.getMatchScore()) > 0) {
+                    isNewOrHigher = true;
+                }
                 match.setMatchScore(score);
                 matchRepository.save(match);
             }
@@ -208,6 +220,21 @@ public class SmartMatchingServiceImpl implements SmartMatchingService {
             newMatch.setMatchScore(score);
             newMatch.setMatchStatus("POSSIBLE");
             matchRepository.save(newMatch);
+            isNewOrHigher = true;
+        }
+
+        // Send email & in-app alert when score is 50% or higher
+        if (isNewOrHigher && score.compareTo(BigDecimal.valueOf(50.0)) >= 0 && lostItem.getUser() != null) {
+            try {
+                notificationService.createNotification(
+                    lostItem.getUser(),
+                    "Potential " + score + "% smart match found for your lost " + lostItem.getItemName() + "!",
+                    "MATCH_FOUND"
+                );
+                emailService.sendMatchNotificationEmail(lostItem.getUser(), lostItem, foundItem, score);
+            } catch (Exception e) {
+                // Log and continue safely
+            }
         }
     }
 

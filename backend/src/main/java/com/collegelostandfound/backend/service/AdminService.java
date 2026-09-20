@@ -4,6 +4,7 @@ import com.collegelostandfound.backend.dto.response.FoundItemResponse;
 import com.collegelostandfound.backend.dto.response.LostItemResponse;
 import com.collegelostandfound.backend.dto.response.admin.AdminClaimReviewResponse;
 import com.collegelostandfound.backend.dto.response.admin.AdminClaimSummaryResponse;
+import com.collegelostandfound.backend.dto.response.admin.AdminItemHistoryDetailResponse;
 import com.collegelostandfound.backend.dto.response.admin.DashboardStatsResponse;
 import com.collegelostandfound.backend.dto.response.admin.ReturnHistoryStatsResponse;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,10 @@ public interface AdminService {
     List<AdminClaimSummaryResponse> getAllClaims();
 
     AdminClaimReviewResponse getClaimDetail(Long id);
+
+    AdminItemHistoryDetailResponse getItemHistoryDetail(Long claimId);
+
+    List<AdminItemHistoryDetailResponse> getAllItemHistory();
 
     AdminClaimSummaryResponse approveClaim(Long id, Authentication authentication);
 

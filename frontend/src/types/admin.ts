@@ -38,6 +38,74 @@ export interface AdminClaimReview extends AdminClaimSummary {
   reviewedBy: number | null
 }
 
+export interface UserSummary {
+  id: number
+  name: string
+  email: string
+  rollNumber: string
+  className: string
+  role: string
+}
+
+export interface LostReportDetail {
+  id: number
+  itemName: string
+  description: string
+  category: string
+  color?: string
+  location: string
+  lostDateTime: string
+  imageUrl?: string | null
+  status: string
+  createdAt: string
+}
+
+export interface FoundReportDetail {
+  id: number
+  itemName: string
+  description: string
+  category: string
+  color?: string
+  location: string
+  foundDateTime: string
+  imageUrl?: string | null
+  status: string
+  createdAt: string
+}
+
+export interface ClaimDetail {
+  id: number
+  verificationAnswer: string
+  status: string
+  createdAt: string
+  reviewedAt?: string | null
+}
+
+export interface TimelineEvent {
+  title: string
+  description: string
+  timestamp: string
+  actorName: string
+  actorRole: string
+  type: string
+}
+
+export interface AdminItemHistoryDetail {
+  claimId: number
+  itemName: string
+  category: string
+  status: string
+  resolvedAt: string
+  claimant?: UserSummary
+  lostReporter?: UserSummary
+  foundReporter?: UserSummary
+  reviewer?: UserSummary
+  lostReport?: LostReportDetail
+  foundReport?: FoundReportDetail
+  claimDetail?: ClaimDetail
+  timeline: TimelineEvent[]
+}
+
 export interface AdminLostItem {
   id: number
   userId?: number

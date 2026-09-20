@@ -237,13 +237,29 @@ export default function LostItemDetailsPage() {
             <p>{item.description}</p>
           </div>
 
+          <div className="detail-actions" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', margin: '24px 0' }}>
+            <button
+              type="button"
+              className="button primary"
+              onClick={() => navigate(`/matches/lost/${item.id}`)}
+            >
+              <i className="bi bi-cpu-fill" /> View Smart Matches
+            </button>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => navigate('/found')}
+            >
+              <i className="bi bi-search" /> Browse Found Items
+            </button>
+          </div>
+
           <div className="safety-note">
             <i className="bi bi-shield-check" />
             <span>
-              <strong>Keep it safe</strong>
+              <strong>Campus Verification Protocol</strong>
               <small>
-                Verify details in a safe, public campus location like Harrison Library or Student
-                Union. Never share private identification passwords.
+                When a match is found, submit a verification claim. Campus security or the finder will verify your details before handing over the item.
               </small>
             </span>
           </div>

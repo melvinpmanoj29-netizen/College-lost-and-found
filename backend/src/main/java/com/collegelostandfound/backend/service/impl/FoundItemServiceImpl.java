@@ -40,7 +40,7 @@ public class FoundItemServiceImpl implements FoundItemService {
     @Override
     @Transactional(readOnly = true)
     public List<FoundItemResponse> getAllFoundItems() {
-        return foundItemRepository.findAllByOrderByCreatedAtDesc().stream()
+        return foundItemRepository.findByStatusNotInOrderByCreatedAtDesc(List.of("RETURNED", "RESOLVED", "ARCHIVED")).stream()
             .map(FoundItemResponse::fromEntity)
             .collect(Collectors.toList());
     }

@@ -4,6 +4,7 @@ import com.collegelostandfound.backend.dto.response.FoundItemResponse;
 import com.collegelostandfound.backend.dto.response.LostItemResponse;
 import com.collegelostandfound.backend.dto.response.admin.AdminClaimReviewResponse;
 import com.collegelostandfound.backend.dto.response.admin.AdminClaimSummaryResponse;
+import com.collegelostandfound.backend.dto.response.admin.AdminItemHistoryDetailResponse;
 import com.collegelostandfound.backend.dto.response.admin.DashboardStatsResponse;
 import com.collegelostandfound.backend.dto.response.admin.ReturnHistoryStatsResponse;
 import com.collegelostandfound.backend.service.AdminService;
@@ -33,6 +34,16 @@ public class AdminController {
     @GetMapping("/return-history")
     public ResponseEntity<ReturnHistoryStatsResponse> getReturnHistory() {
         return ResponseEntity.ok(adminService.getReturnHistoryStats());
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<List<AdminItemHistoryDetailResponse>> getAllItemHistory() {
+        return ResponseEntity.ok(adminService.getAllItemHistory());
+    }
+
+    @GetMapping("/history/{claimId}")
+    public ResponseEntity<AdminItemHistoryDetailResponse> getItemHistoryDetail(@PathVariable Long claimId) {
+        return ResponseEntity.ok(adminService.getItemHistoryDetail(claimId));
     }
 
     @GetMapping("/lost-items")

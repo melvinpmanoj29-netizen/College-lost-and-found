@@ -20,12 +20,23 @@ public class CloudinaryConfig {
     @Value("${cloudinary.api-secret:}")
     private String apiSecret;
 
+    private String cleanValue(String val) {
+        if (val == null) return "";
+        String s = val.trim();
+        if ((s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'"))) {
+            if (s.length() >= 2) {
+                s = s.substring(1, s.length() - 1).trim();
+            }
+        }
+        return s;
+    }
+
     @Bean
     public Cloudinary cloudinary() {
         Map<String, Object> config = new HashMap<>();
-        config.put("cloud_name", cloudName != null ? cloudName.trim() : "");
-        config.put("api_key", apiKey != null ? apiKey.trim() : "");
-        config.put("api_secret", apiSecret != null ? apiSecret.trim() : "");
+        config.put("cloud_name", cleanValue(cloudName));
+        config.put("api_key", cleanValue(apiKey));
+        config.put("api_secret", cleanValue(apiSecret));
         config.put("secure", true);
         return new Cloudinary(config);
     }

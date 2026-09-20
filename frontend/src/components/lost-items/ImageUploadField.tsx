@@ -162,9 +162,9 @@ export default function ImageUploadField({
         ref={fileInputRef}
         onChange={handleFileInputChange}
         accept="image/jpeg,image/png,image/webp"
-        className="visually-hidden-input"
+        style={{ display: 'none' }}
         id="lost-item-image-input"
-        aria-label="Upload lost item photo"
+        aria-label="Upload photo"
       />
 
       {/* When no image is selected / no preview */}
@@ -190,20 +190,10 @@ export default function ImageUploadField({
           </div>
           <div className="dropzone-content">
             <p className="dropzone-title">
-              <strong>Click to upload</strong> or drag and drop
+              <strong>Click to upload photo</strong> or drag and drop
             </p>
-            <p className="dropzone-hint">JPEG, PNG, or WEBP (Max 5 MB)</p>
+            <p className="dropzone-hint">JPEG, PNG, or WEBP (Max 5 MB • Cloudinary)</p>
           </div>
-          <button
-            type="button"
-            className="button secondary small dropzone-button"
-            onClick={(e) => {
-              e.stopPropagation()
-              openFilePicker()
-            }}
-          >
-            <i className="bi bi-folder2-open" /> Choose image
-          </button>
         </div>
       )}
 
