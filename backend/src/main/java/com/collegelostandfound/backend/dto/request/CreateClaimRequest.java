@@ -2,6 +2,7 @@ package com.collegelostandfound.backend.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class CreateClaimRequest {
 
@@ -12,6 +13,7 @@ public class CreateClaimRequest {
     private Long foundItemId;
 
     @NotBlank(message = "Verification answer is required")
+    @Size(max = 1000, message = "Verification answer must not exceed 1000 characters")
     private String verificationAnswer;
 
     public CreateClaimRequest() {

@@ -16,6 +16,7 @@ public class UpdateLostItemRequest {
     private String imageUrl;
 
     @NotBlank(message = "Description is required")
+    @Size(max = 2000, message = "Description must not exceed 2000 characters")
     private String description;
 
     @NotBlank(message = "Category is required")

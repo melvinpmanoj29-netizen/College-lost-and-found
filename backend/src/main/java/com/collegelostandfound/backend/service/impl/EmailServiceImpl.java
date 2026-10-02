@@ -123,11 +123,10 @@ public class EmailServiceImpl implements EmailService {
         String studentName = recipient.getStudentName() != null ? recipient.getStudentName() : "Student";
         String link = (resetUrl != null && !resetUrl.isBlank()) ? resetUrl : (frontendUrl + "/reset-password?token=" + resetToken);
 
-        log.info("Password reset requested for {}. Reset Token: {} | Reset Link: {}", recipientEmail, resetToken, link);
-
+        log.info("Password reset requested for {} (token omitted from logs for security)", recipientEmail);
         if (mailSender == null) {
-            log.info("[SIMULATED EMAIL - Reset Password]\nTo: {}\nSubject: Password Reset Request\nReset Link: {}\nToken: {}",
-                    recipientEmail, link, resetToken);
+            log.info("[SIMULATED EMAIL - Reset Password]\nTo: {}\nSubject: Password Reset Request\nReset Link: {} (token omitted from logs)",
+                    recipientEmail, link);
             return;
         }
 

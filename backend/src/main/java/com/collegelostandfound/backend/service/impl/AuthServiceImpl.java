@@ -128,7 +128,7 @@ public class AuthServiceImpl implements AuthService {
 
             String resetUrl = frontendUrl + "/reset-password?token=" + token;
             emailService.sendPasswordResetEmail(user, token, resetUrl);
-            log.info("Generated password reset token for user {}: token={}", user.getEmail(), token);
+            log.info("Generated password reset token for user {} (token omitted from logs for security)", user.getEmail());
         } else {
             log.info("Password reset requested for non-existent email: {}", email);
         }

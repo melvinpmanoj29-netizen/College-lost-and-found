@@ -44,6 +44,13 @@ public class SearchServiceImpl implements SearchService {
             Boolean urgent,
             String type
     ) {
+        // Enforce maximum input lengths to prevent DoS via unbounded LIKE queries
+        q = truncate(q, 200);
+        category = truncate(category, 100);
+        location = truncate(location, 100);
+        color = truncate(color, 100);
+        status = truncate(status, 50);
+
         List<LostItemResponse> lostResults = new ArrayList<>();
         List<FoundItemResponse> foundResults = new ArrayList<>();
 
@@ -67,6 +74,12 @@ public class SearchServiceImpl implements SearchService {
         }
 
         return new SearchResponse(lostResults, foundResults);
+    }
+
+    /** Truncates a string to the given max length; returns null if blank. */
+    private String truncate(String value, int maxLen) {
+        if (value == null || value.isBlank()) return value;
+        return value.length() > maxLen ? value.substring(0, maxLen) : value;
     }
 
     private Specification<LostItem> buildLostItemSpecification(

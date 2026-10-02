@@ -1,11 +1,30 @@
-<<<<<<< HEAD
-*.freebuff/
-=======
-*.freebuff
-
-# Environment variables & local secrets
+# Environment variables & local secrets — NEVER commit real credentials
 .env
 .env.local
 .env.*.local
 !.env.example
->>>>>>> 7195f62be0da718551d27eaa1020120c6b312f61
+
+# Local application.properties overrides with real secrets
+backend/src/main/resources/application-local.properties
+backend/src/main/resources/application-secrets.properties
+
+# Build artifacts
+*.freebuff/
+*.freebuff
+target/
+*.jar
+*.war
+*.class
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.settings/
+.classpath
+.project
+
+# Node / frontend build
+node_modules/
+dist/
+frontend/dist/

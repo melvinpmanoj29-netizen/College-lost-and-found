@@ -60,8 +60,8 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("New password cannot be the same as your current password");
         }
 
-        if (request.getNewPassword() == null || request.getNewPassword().trim().length() < 6) {
-            throw new IllegalArgumentException("New password must be at least 6 characters");
+        if (request.getNewPassword() == null || request.getNewPassword().trim().length() < 8) {
+            throw new IllegalArgumentException("New password must be at least 8 characters");
         }
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
