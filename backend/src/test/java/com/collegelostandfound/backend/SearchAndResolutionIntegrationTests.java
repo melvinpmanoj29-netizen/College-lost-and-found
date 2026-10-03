@@ -46,6 +46,9 @@ public class SearchAndResolutionIntegrationTests {
     private UserRepository userRepository;
 
     @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Autowired
@@ -62,6 +65,7 @@ public class SearchAndResolutionIntegrationTests {
 
     @BeforeEach
     void setUp() {
+        notificationRepository.deleteAll();
         claimRepository.deleteAll();
         matchRepository.deleteAll();
         lostItemRepository.deleteAll();

@@ -2,8 +2,7 @@ package com.collegelostandfound.backend;
 
 import com.collegelostandfound.backend.entity.PasswordResetToken;
 import com.collegelostandfound.backend.entity.User;
-import com.collegelostandfound.backend.repository.PasswordResetTokenRepository;
-import com.collegelostandfound.backend.repository.UserRepository;
+import com.collegelostandfound.backend.repository.*;
 import com.collegelostandfound.backend.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +35,21 @@ public class PasswordResetIntegrationTests {
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private ClaimRepository claimRepository;
+
+    @Autowired
+    private MatchRepository matchRepository;
+
+    @Autowired
+    private LostItemRepository lostItemRepository;
+
+    @Autowired
+    private FoundItemRepository foundItemRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -45,6 +59,11 @@ public class PasswordResetIntegrationTests {
 
     @BeforeEach
     void setUp() {
+        notificationRepository.deleteAll();
+        claimRepository.deleteAll();
+        matchRepository.deleteAll();
+        lostItemRepository.deleteAll();
+        foundItemRepository.deleteAll();
         passwordResetTokenRepository.deleteAll();
         userRepository.deleteAll();
 

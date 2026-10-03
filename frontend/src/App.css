@@ -3621,3 +3621,420 @@ footer {
   animation: spin 1s linear infinite;
   display: inline-block;
 }
+
+/* ==========================================================================
+   Special Visual & Interactive Effects Enhancements
+   ========================================================================== */
+
+/* 1. Interactive Button Shimmer Sheen & Click Physics */
+.btn, .btn-cobalt, .btn-primary, .submit-btn, .claim-submit-btn, .report-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast) !important;
+}
+
+.btn:active, .btn-cobalt:active, .btn-primary:active, .submit-btn:active {
+  transform: scale(0.97) !important;
+}
+
+.btn-cobalt:hover, .btn-primary:hover {
+  box-shadow: 0 6px 20px -2px var(--color-primary-glow), var(--shadow-button) !important;
+  transform: translateY(-1px);
+}
+
+.btn-cobalt::after, .btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(25deg);
+  pointer-events: none;
+  transition: transform 0.6s ease;
+}
+
+.btn-cobalt:hover::after, .btn-primary:hover::after {
+  transform: translateX(350%) rotate(25deg);
+}
+
+/* 2. Interactive Card Lift, Glass Glow & Image Micro-Zoom */
+.lost-item-card, .found-item-card, .item-card, .card, .stat-card, .dashboard-stat-card {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease !important;
+  will-change: transform, box-shadow;
+}
+
+.lost-item-card:hover, .found-item-card:hover, .item-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 16px 36px -8px var(--color-primary-glow), 0 0 0 1px var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.lost-item-card .card-image-wrap img,
+.found-item-card .card-image-wrap img,
+.item-card .card-image-wrap img,
+.item-card-image img {
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lost-item-card:hover .card-image-wrap img,
+.found-item-card:hover .card-image-wrap img,
+.item-card:hover .card-image-wrap img,
+.item-card:hover .item-card-image img {
+  transform: scale(1.05);
+}
+
+/* 3. Urgent Badge & Live Notification Breathing Glow */
+.urgent-badge, .badge-urgent, .is-urgent {
+  animation: pulseGlowRing 2.2s infinite ease-in-out;
+}
+
+.notification-dot, .notif-status-dot.unread {
+  animation: pulseCobaltGlow 2.4s infinite ease-in-out;
+}
+
+.nav-unread-badge {
+  animation: pulseGlowRing 2s infinite ease-in-out;
+}
+
+/* 4. Brand Logo Interactive Tilt & Flare */
+.brand:hover .brand-mark {
+  transform: scale(1.08) rotate(6deg);
+  box-shadow: 0 0 14px var(--color-primary-glow), var(--shadow-button);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+
+.brand-mark {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* 5. Theme Toggle Smooth Rotation */
+.theme-toggle-btn {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background-color var(--transition-fast), color var(--transition-fast) !important;
+}
+
+.theme-toggle-btn:hover {
+  transform: rotate(18deg) scale(1.06);
+}
+
+.theme-toggle-btn:active {
+  transform: rotate(180deg) scale(0.94);
+}
+
+/* 6. Form Input Smooth Focus Ambient Ring */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="datetime-local"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3.5px var(--color-primary-glow) !important;
+  outline: none !important;
+}
+
+/* 7. Stat Cards Ambient Glow Backing */
+.stat-card, .dashboard-stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before, .dashboard-stat-card::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-primary-glow) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0.6;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.stat-card:hover::before, .dashboard-stat-card:hover::before {
+  opacity: 1;
+  transform: scale(1.3);
+}
+
+/* 8. Match Score Indicator Subtle Radiant Pulse */
+.match-score-badge, .score-pill, .fmc-match-score {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(62, 121, 234, 0.2);
+}
+
+/* 9. Smooth Page & Content Section Transitions */
+.page-container, .student-dashboard-page, .report-page, .search-page, .admin-page, .auth-page-container {
+  animation: fadeInUpSmooth 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ==========================================================================
+   10. Crystal-Clear High-Contrast Modal Window System (Light & Dark Mode)
+   ========================================================================== */
+
+.modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(15, 23, 42, 0.68) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10000 !important;
+  padding: 20px !important;
+  opacity: 1 !important;
+  animation: modalFadeIn 0.25s ease-out both !important;
+}
+
+.modal-content,
+.modal-card {
+  position: relative !important;
+  background-color: var(--color-surface) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 14px !important;
+  box-shadow:
+    0 24px 60px -12px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(62, 121, 234, 0.15),
+    0 8px 24px -4px var(--color-primary-glow) !important;
+  width: 100% !important;
+  max-width: 480px;
+  overflow: hidden !important;
+  animation: modalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+[data-theme="light"] .modal-content,
+[data-theme="light"] .modal-card {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  box-shadow:
+    0 25px 60px -15px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(62, 121, 234, 0.25),
+    0 10px 30px -5px rgba(62, 121, 234, 0.12) !important;
+}
+
+.modal-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 18px 22px !important;
+  background: var(--color-surface-muted) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+[data-theme="light"] .modal-header {
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.modal-header h2,
+.modal-header h3 {
+  color: var(--color-text-primary) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.modal-header .icon-button {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--color-text-secondary) !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: var(--radius-md) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.modal-header .icon-button:hover {
+  background: var(--color-surface-hover) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-border) !important;
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  padding: 24px 22px !important;
+  background: var(--color-surface) !important;
+  color: var(--color-text-primary) !important;
+}
+
+[data-theme="light"] .modal-body {
+  background: #ffffff !important;
+}
+
+.modal-body p {
+  color: var(--color-text-secondary) !important;
+  font-size: 0.9rem !important;
+  line-height: 1.55 !important;
+}
+
+.modal-body label {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  display: block !important;
+  margin-bottom: 6px !important;
+}
+
+.modal-body .input-wrap {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+  transition: all var(--transition-fast) !important;
+}
+
+[data-theme="light"] .modal-body .input-wrap {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+.modal-body .input-wrap:focus-within {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px var(--color-primary-glow) !important;
+}
+
+.modal-body .input-wrap input {
+  background: transparent !important;
+  color: var(--color-text-primary) !important;
+  border: none !important;
+  outline: none !important;
+  padding: 10px 8px !important;
+  width: 100% !important;
+  font-size: 0.92rem !important;
+}
+
+[data-theme="light"] .modal-body .input-wrap input {
+  color: #0f172a !important;
+}
+
+.modal-body .input-wrap i {
+  color: var(--color-text-muted) !important;
+  font-size: 1rem !important;
+}
+
+.modal-actions,
+.modal-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  margin-top: 20px !important;
+}
+
+.modal-actions .button.secondary,
+.modal-body .button.secondary {
+  background: var(--color-surface-muted) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border) !important;
+  font-weight: 600 !important;
+  padding: 8px 16px !important;
+  border-radius: var(--radius-md) !important;
+}
+
+[data-theme="light"] .modal-actions .button.secondary,
+[data-theme="light"] .modal-body .button.secondary {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.modal-actions .button.secondary:hover,
+.modal-body .button.secondary:hover {
+  background: var(--color-surface-hover) !important;
+  border-color: var(--color-border-strong) !important;
+}
+
+.modal-actions .button.primary,
+.modal-body .button.primary {
+  background: var(--color-primary) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 600 !important;
+  padding: 8px 20px !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 4px 12px var(--color-primary-glow) !important;
+}
+
+.modal-actions .button.primary:hover,
+.modal-body .button.primary:hover {
+  background: var(--color-primary-hover) !important;
+  box-shadow: 0 6px 18px var(--color-primary-glow) !important;
+  transform: translateY(-1px);
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ==========================================================================
+   11. Extra Global Aesthetics & Micro-Animations
+   ========================================================================== */
+
+/* Shimmer on Category Filters & Action Chips */
+.category-pill, .filter-chip, .tag-pill {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.category-pill:hover, .filter-chip:hover, .tag-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--color-primary-glow);
+}
+
+/* Table Row Glass Hover Highlight */
+tbody tr {
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+
+tbody tr:hover {
+  background-color: var(--color-surface-hover) !important;
+}
+
+/* Floating Action Item Badge Accent */
+.badge.lost {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.14) 0%, rgba(239, 68, 68, 0.22) 100%) !important;
+  color: var(--color-danger) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+.badge.found {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(16, 185, 129, 0.22) 100%) !important;
+  color: #059669 !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
